@@ -2,13 +2,13 @@ port: 9090
 assetsDir: ./assets
 config:
   name: pedidos
-  description: 'Productos Lácteos del Sur "Rey Pepinito". Pedidos SAP Excel'
+  description: 'Productos Lácteos del Sur "Rey Pepinito". Pedidos ERP Excel'
   logo: rey-pepinito.png
   parameters:
     htmx: 'https://unpkg.com/htmx.org@2.0.6'
     source: Cliente
     workbook: Archivo pedido
-    submit: Generar Archivo SAP
+    submit: Generar Archivo ERP
     extractionError: |
       Error extrayendo pedido de archivo Excel.
       Verifique que corresponde al cliente seleccionado
@@ -112,12 +112,12 @@ config:
             locator: CANTIDAD
   result:
     separator: "\t"
-    baseName: sap-pedido-${sourceName}-${NumAtCard}
+    baseName: erp-pedido-${sourceName}-${NumAtCard}
     header:
       filename: cabecera.txt
       properties:
         - name: DocNum
-          fyi: Número de pedido SAP
+          fyi: Número de pedido ERP
           defaultValue: 1
         - name: DocEntry
           defaultValue: 1
