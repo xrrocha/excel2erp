@@ -1,0 +1,24 @@
+.top-title {
+    color: navy;
+    background-color: white;
+    text-align: center;
+    float: right;
+}
+ul.horizontal {
+    overflow:hidden;
+}
+
+li.horizontal {
+    text-align: center;
+    display: inline-block;
+}
+
+img.icon {
+    width: 128px;
+    height: 128px;
+    float: left;
+}
+
+br {
+    clear: both;
+}
