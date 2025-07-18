@@ -107,7 +107,10 @@ data class Server(
             head {
                 meta { charset = "UTF-8" }
                 link(href = "/wb.css", rel = "stylesheet", type = "text/css")
-                script(src = "https://unpkg.com/htmx.org@2.0.6", type = "text/javascript") {}
+                script(
+                    src = config.parameter("htmx"),
+                    type = "text/javascript"
+                ) {}
             }
             body {
                 div {

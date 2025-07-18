@@ -9,5 +9,7 @@ functional style and leveraging
 Yaml (w/[Jackson](https://github.com/FasterXML/jackson-dataformats-text/tree/2.x/yaml))
 and [HTMX](https://htmx.org/).
 
-An illustrating document (written in Spanish) is available at
-https://rrocha.me/vimeworks/algebra-vs-aritmetica.html
+To run the beast, execute the `dist/run.sh` shell script and enjoy!
+
+An illustrating document (in Spanish, oh my!) is available
+[for your perusal pleasure](dist/algebra-vs-aritmetica.html).
