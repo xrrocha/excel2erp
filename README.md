@@ -11,5 +11,7 @@ and [HTMX](https://htmx.org/).
 
 To run the beast, execute the `dist/run.sh` shell script and enjoy!
 
-An illustrating document (in Spanish, oh my!) is available
-[for your perusal pleasure](dist/algebra-vs-aritmetica.html).
+An illustrating document (in Spanish, oh my!)
+is located at `dist/algebra-vs-aritmetica.html` in this repo
+and is also available online,
+[for your perusal pleasure](https://rrocha.me/vimeworks/algebra-vs-aritmetica.html).
