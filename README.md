@@ -9,8 +9,8 @@ functional style and leveraging
 Yaml (w/[Jackson](https://github.com/FasterXML/jackson-dataformats-text/tree/2.x/yaml))
 and [HTMX](https://htmx.org/).
 
-To run the demo, execute the `demo/run.sh` shell script. Under Windows
-execute the `demo/run.bat` batch file. Enjoy!
+To run the demo (requires Java 11+), execute the `demo/run.sh` shell script. 
+Under Windows execute the `demo/run.bat` batch file. Enjoy!
 
 An illustrating document (in Spanish, oh my!)
 is located at `demo/algebra-vs-aritmetica.html` in this repo
