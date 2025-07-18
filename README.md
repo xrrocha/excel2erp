@@ -9,7 +9,8 @@ functional style and leveraging
 Yaml (w/[Jackson](https://github.com/FasterXML/jackson-dataformats-text/tree/2.x/yaml))
 and [HTMX](https://htmx.org/).
 
-To run the beast, execute the `dist/run.sh` shell script and enjoy!
+To run the demo, execute the `dist/run.sh` shell script. Under Windows
+execute `dist/run.bat`. Enjoy!
 
 An illustrating document (in Spanish, oh my!)
 is located at `dist/algebra-vs-aritmetica.html` in this repo
