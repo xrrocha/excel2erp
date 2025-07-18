@@ -9,6 +9,7 @@ build/
 *.log
 gradlew*
 *.tsv
+.*.swp
 
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
