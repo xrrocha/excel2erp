@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* Responsive images: suggestive, not informative */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    /* Floating images for visual rhythm */
+    .float-right {
+      float: right;
+      max-width: 45%;
+      margin: 0 0 1rem 1rem;
+    }
+    .float-left {
+      float: left;
+      max-width: 45%;
+      margin: 0 1rem 1rem 0;
+    }
+
+    /* On mobile, don't float - stack instead */
+    @media (max-width: 500px) {
+      .float-right, .float-left {
+        float: none;
+        max-width: 100%;
+        margin: 1rem 0;
+      }
+    }
+
+    /* Tappable images link to full size */
+    a.img-link {
+      display: block;
+    }
+    a.img-link img {
+      transition: opacity 0.2s;
+    }
+    a.img-link:hover img {
+      opacity: 0.9;
+    }
+
+    /* Navigation */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-top: 2rem;
+      border-top: 1px solid #ddd;
+      font-size: 0.95rem;
+    }
+    .nav a {
+      color: #0066cc;
+      text-decoration: none;
+      padding: 0.5rem;
+    }
+    .nav a:hover {
+      text-decoration: underline;
+    }
+    .nav .prev { text-align: left; }
+    .nav .page { text-align: center; color: #666; }
+    .nav .next { text-align: right; }
+
+    /* Snapshot disclaimer */
+    .snapshot {
+      font-size: 0.85rem;
+      font-style: italic;
+      color: #666;
+      background: #f9f9f9;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .snapshot a {
+      color: #0066cc;
+    }
+
+    /* Drill-down link */
+    .drill-down {
+      display: block;
+      text-align: center;
+      padding: 0.75rem;
+      margin: 1.5rem 0;
+      background: #f5f5f5;
+      border-radius: 4px;
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .drill-down:hover {
+      background: #eee;
+    }
+
+    /* Code blocks */
+    pre {
+      background: #f6f8fa;
+      padding: 1rem;
+      overflow-x: auto;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    code {
+      font-family: "SF Mono", Consolas, monospace;
+    }
+
+    /* Details/summary for collapsible content */
+    details {
+      margin: 1rem 0;
+      padding: 0.5rem;
+      background: #fafafa;
+      border-radius: 4px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #f5f5f5;
+    }
+
+    /* Table wrapper for horizontal scroll on mobile */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    /* Headings */
+    h1 { font-size: 1.75rem; margin-top: 0; }
+    h2 { font-size: 1.4rem; margin-top: 2rem; }
+    h3 { font-size: 1.15rem; }
+
+    /* Footnotes */
+    .footnotes {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+
+    /* Audio player */
+    audio {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* Clearfix for floats */
+    .clearfix::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  </style>
+</head>
+<body>
+{{ content }}
+</body>
+</html>
