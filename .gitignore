@@ -1,0 +1,52 @@
+# OS
+._*
+~*.*
+.DS_Store
+
+# LibreOffice/Excel temp files
+.~lock.*#
+
+# Editors
+.idea/
+.vscode/
+.*.sw?
+
+# Private (separate repo)
+CLAUDE.md
+local/
+
+# Logs
+*.log
+
+# Build artifacts
+build/
+out/
+target/
+dist/
+*.class
+*.jar
+!demo/*.jar
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Node
+node_modules/
+.npm/
+
+# Bun
+.bun/
+
+# Jekyll
+_site/
+.jekyll-cache/
+.jekyll-metadata
+Gemfile.lock
+vendor/
+
+# Test output
+test-results/
+playwright-report/
+coverage/

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel2ERP</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --warning-border: #fde68a;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    /* Header bar with logo and title */
+    .header-bar {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .header-logo {
+      height: 40px;
+      object-fit: contain;
+      background: white;
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+
+    .header-title {
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    /* Main container */
+    .main-container {
+      max-width: 700px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    /* Card */
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .card-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    /* Two-column layout */
+    .form-layout {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Source selector */
+    .source-section label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: 0.375rem;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .source-section select {
+      width: 180px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      background: white;
+      color: var(--gray-800);
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .source-section select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Customer section */
+    .customer-section {
+      min-width: 0;
+    }
+
+    .customer-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .customer-logo {
+      width: 100px;
+      height: 60px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .customer-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    /* Form fields */
+    .form-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.875rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field-group label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--gray-600);
+      margin-bottom: 0.25rem;
+    }
+
+    .field-group input[type="text"],
+    .field-group input[type="date"] {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      background: white;
+      color: var(--gray-800);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .field-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* File input */
+    .file-group {
+      grid-column: 1 / -1;
+      margin-top: 0.5rem;
+    }
+
+    .file-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.875rem;
+      border: 1px dashed var(--gray-300);
+      border-radius: var(--radius);
+      background: var(--gray-50);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .file-input-wrapper:hover {
+      border-color: var(--primary);
+      background: rgba(79, 70, 229, 0.02);
+    }
+
+    .file-input-wrapper.has-file {
+      border-color: var(--success);
+      border-style: solid;
+      background: var(--success-bg);
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .file-icon {
+      width: 24px;
+      height: 24px;
+      color: var(--gray-400);
+      flex-shrink: 0;
+    }
+
+    .file-input-wrapper.has-file .file-icon {
+      color: var(--success);
+    }
+
+    .file-text {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+    }
+
+    .file-text strong {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    /* Submit button */
+    .submit-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--gray-100);
+    }
+
+    button[type="submit"] {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: var(--shadow);
+    }
+
+    button[type="submit"]:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    button[type="submit"]:disabled {
+      background: var(--gray-300);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Messages */
+    .messages {
+      margin-top: 1rem;
+    }
+
+    .message-box {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.625rem;
+    }
+
+    .message-box + .message-box {
+      margin-top: 0.5rem;
+    }
+
+    .success {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success);
+    }
+
+    .warning {
+      background: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--warning);
+    }
+
+    .error {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error);
+    }
+
+    .message-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .message-content {
+      flex: 1;
+    }
+
+    .message-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .message-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.8rem;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .footer a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Loading/Processing */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      color: var(--gray-500);
+    }
+
+    .processing-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--gray-600);
+    }
+
+    [x-cloak] { display: none !important; }
+
+    /* Config picker */
+    .config-picker {
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .config-picker-icon {
+      color: var(--gray-400);
+      margin-bottom: 1rem;
+    }
+
+    .config-picker-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 0.5rem;
+    }
+
+    .config-picker-text {
+      font-size: 0.9rem;
+      color: var(--gray-500);
+      margin-bottom: 1.5rem;
+    }
+
+    .config-file-input {
+      display: inline-flex;
+      max-width: 280px;
+      margin: 0 auto;
+    }
+
+    /* Change config button in header */
+    .header-config-btn {
+      margin-left: auto;
+      padding: 0.375rem 0.75rem;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: var(--radius);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .header-config-btn:hover {
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .header-config-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--gray-400);
+      font-size: 0.9rem;
+    }
+
+    /* Preview section */
+    .preview-card {
+      margin-top: 1rem;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .preview-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .preview-filename {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      font-family: monospace;
+    }
+
+    .preview-body {
+      padding: 1rem;
+    }
+
+    .preview-section {
+      margin-bottom: 1rem;
+    }
+
+    .preview-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .preview-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+      margin-bottom: 0.5rem;
+    }
+
+    .preview-table-wrapper {
+      max-height: 150px;
+      overflow: auto;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+    }
+
+    .preview-table-wrapper.detail {
+      max-height: 300px;
+    }
+
+    .preview-table {
+      min-width: 100%;
+      width: max-content;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .preview-table th {
+      position: sticky;
+      top: 0;
+      background: var(--gray-100);
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--gray-700);
+      border-bottom: 1px solid var(--gray-200);
+      white-space: nowrap;
+    }
+
+    .preview-table td {
+      padding: 0.375rem 0.75rem;
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--gray-600);
+      white-space: nowrap;
+    }
+
+    .preview-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .preview-table tr:hover td {
+      background: var(--gray-50);
+    }
+
+    .preview-row-count {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      margin-top: 0.375rem;
+    }
+
+    /* Action buttons */
+    .btn-confirm {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      background: linear-gradient(135deg, var(--success) 0%, #047857 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: var(--shadow);
+    }
+
+    .btn-confirm:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-cancel {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      background: white;
+      color: var(--gray-600);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-left: 0.75rem;
+    }
+
+    .btn-cancel:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-400);
+    }
+  </style>
+</head>
+<body x-data="app()" x-init="init()">
+  <!-- Processing overlay -->
+  <div x-show="processing" class="processing-overlay" x-cloak>
+    <div class="spinner"></div>
+    <div class="loading-text">Processing...</div>
+  </div>
+
+  <!-- Header bar with logo and title -->
+  <div class="header-bar" x-show="!loading && !needsConfigFile">
+    <img x-show="config?.logo" :src="config?.logo" :alt="config?.name" class="header-logo" x-cloak>
+    <span class="header-title" x-text="config?.description || 'Excel2ERP'"></span>
+    <button type="button" class="header-config-btn" @click="changeConfig" :title="configFileName || 'Change configuration'">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <span x-text="configFileName || 'Config'"></span>
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div x-show="loading" class="loading-container" x-cloak>
+    <div class="spinner"></div>
+    <div class="loading-text">Loading configuration...</div>
+  </div>
+
+  <!-- Config file picker (shown when no config available) -->
+  <div x-show="needsConfigFile && !loading" class="main-container" x-cloak>
+    <div class="card">
+      <div class="card-body config-picker">
+        <div class="config-picker-icon">
+          <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <h2 class="config-picker-title">Select Configuration</h2>
+        <p class="config-picker-text">
+          To get started, select a YAML configuration file.
+        </p>
+        <label class="file-input-wrapper config-file-input">
+          <input type="file" accept=".yaml,.yml" @change="onConfigFileChange">
+          <svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="file-text">
+            <strong>Choose file</strong> &nbsp;·&nbsp; excel2erp.yaml
+          </span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-container" x-show="!loading && !needsConfigFile">
+    <!-- Form card -->
+    <div class="card">
+      <div class="card-body">
+        <form @submit.prevent="process">
+          <div class="form-layout">
+            <!-- Source selector (left column) -->
+            <div class="source-section">
+              <label for="source" x-text="config?.parameters?.source || 'Source'"></label>
+              <select id="source" name="source" x-model="selectedSource" @change="onSourceChange">
+                <option value="">Select...</option>
+                <template x-for="source in sources" :key="source.name">
+                  <option :value="source.name" x-text="source.description"></option>
+                </template>
+              </select>
+            </div>
+
+            <!-- Customer form (right column) -->
+            <div class="customer-section">
+              <!-- Empty state -->
+              <div x-show="!selectedSource" class="empty-state">
+                Select a source to continue
+              </div>
+
+              <!-- Form content -->
+              <div x-show="selectedSource" x-transition.duration.150ms>
+                <!-- Customer header with logo -->
+                <div class="customer-header" x-show="getSelectedSourceConfig()?.logo">
+                  <img
+                    :src="getSelectedSourceConfig()?.logo"
+                    :alt="getSelectedSourceConfig()?.description"
+                    class="customer-logo"
+                    x-cloak
+                  >
+                  <div class="customer-name" x-text="getSelectedSourceConfig()?.description"></div>
+                </div>
+
+                <!-- Form fields -->
+                <div class="form-fields">
+                  <template x-for="field in dynamicFields" :key="field.name">
+                    <div class="field-group">
+                      <label :for="field.name" x-text="field.prompt"></label>
+                      <input
+                        :type="field.type === 'date' ? 'date' : 'text'"
+                        :id="field.name"
+                        :name="field.name"
+                        x-model="formData[field.name]"
+                        required
+                      >
+                    </div>
+                  </template>
+
+                  <!-- File input -->
+                  <div class="field-group file-group">
+                    <label x-text="config?.parameters?.workbook || 'Archivo Excel'"></label>
+                    <label class="file-input-wrapper" :class="{ 'has-file': file }">
+                      <input type="file" accept=".xls,.xlsx,.xlsm,.xlsb" @change="onFileChange" required>
+                      <svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      <span class="file-text" x-show="!file">
+                        <strong>Choose file</strong> &nbsp;·&nbsp; .xls, .xlsx
+                      </span>
+                      <span class="file-name" x-show="file" x-text="file?.name"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Submit / Download button -->
+                <div class="submit-section">
+                  <!-- Show process button when no preview -->
+                  <button x-show="!preview" type="submit" :disabled="!canSubmit">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <span x-text="config?.parameters?.submit || 'Generar'"></span>
+                  </button>
+                  <!-- Show download button when preview ready -->
+                  <button x-show="preview" type="button" class="btn-confirm" @click="confirmDownload" x-cloak>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Download ZIP
+                  </button>
+                  <button x-show="preview" type="button" class="btn-cancel" @click="cancelPreview" x-cloak>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Preview card (side-by-side when active) -->
+    <div x-show="preview" class="card preview-card" x-cloak x-transition>
+      <div class="preview-header">
+        <span class="preview-title" x-text="config?.parameters?.previewLabel || 'Preview'"></span>
+        <span class="preview-filename" x-text="preview?.zipFilename"></span>
+      </div>
+      <div class="preview-body">
+        <!-- Header preview -->
+        <div class="preview-section">
+          <div class="preview-section-title" x-text="config?.parameters?.headerLabel || 'Header'"></div>
+          <div class="preview-table-wrapper">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <template x-for="key in preview?.headerProperties || []" :key="key">
+                    <th x-text="key"></th>
+                  </template>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <template x-for="key in preview?.headerProperties || []" :key="'val-'+key">
+                    <td x-text="preview?.header[key] || '—'"></td>
+                  </template>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Detail preview -->
+        <div class="preview-section">
+          <div class="preview-section-title" x-text="config?.parameters?.detailLabel || 'Detail'"></div>
+          <div class="preview-table-wrapper detail">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <template x-for="key in preview?.detailProperties || []" :key="'dh-'+key">
+                    <th x-text="key"></th>
+                  </template>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="(row, idx) in preview?.detail || []" :key="'dr-'+idx">
+                  <tr>
+                    <template x-for="key in preview?.detailProperties || []" :key="'dc-'+idx+'-'+key">
+                      <td x-text="row[key] || '—'"></td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div class="preview-row-count" x-text="`${preview?.detail?.length || 0} rows`"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages">
+      <!-- Success -->
+      <div x-show="success" class="message-box success" x-cloak>
+        <svg class="message-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div class="message-content">
+          <span x-text="successMessage"></span>
+        </div>
+      </div>
+
+      <!-- Warnings -->
+      <div x-show="warnings.length > 0" class="message-box warning" x-cloak>
+        <svg class="message-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div class="message-content">
+          <div class="message-title">Warnings</div>
+          <ul class="message-list">
+            <template x-for="warning in warnings" :key="warning.field + warning.message">
+              <li><strong x-text="warning.field + ':'"></strong> <span x-text="warning.message"></span></li>
+            </template>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div x-show="error" class="message-box error" x-cloak>
+        <svg class="message-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div class="message-content">
+          <div class="message-title" x-text="error"></div>
+          <ul x-show="errorSuggestions.length > 0" class="message-list">
+            <template x-for="suggestion in errorSuggestions" :key="suggestion">
+              <li x-text="suggestion"></li>
+            </template>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <a href="https://github.com/xrrocha/excel2erp" target="_blank">Excel2ERP</a> · Browser-native data translation
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Jekyll configuration for local GitHub Pages preview
+title: Excel2ERP - De la Aritmética al Álgebra
+description: Tutorial sobre programación declarativa con metadatos
+
+# Markdown processing (GFM = GitHub Flavored Markdown)
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+# Exclude development files from build
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor

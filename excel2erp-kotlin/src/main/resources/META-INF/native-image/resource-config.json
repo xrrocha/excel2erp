@@ -1,0 +1,15 @@
+{
+  "resources": {
+    "includes": [
+      {"pattern": "org/apache/poi/.*"},
+      {"pattern": "org/apache/xmlbeans/.*"},
+      {"pattern": ".*\\.xsd"},
+      {"pattern": ".*\\.xml"},
+      {"pattern": ".*\\.yaml"},
+      {"pattern": ".*\\.properties"}
+    ]
+  },
+  "bundles": [
+    {"name": "org.apache.xmlbeans.impl.regex.message"}
+  ]
+}
