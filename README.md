@@ -42,7 +42,7 @@ Add a new client? Add 15 lines of YAML. Zero code changes.
 |----------|-----------|---------|--------|
 | 🟣 **Kotlin** | [excel2erp-kotlin/](excel2erp-kotlin/) | JVM, JS | ✅ Complete (JVM) |
 | 🔵 **TypeScript** | [excel2erp-typescript/](excel2erp-typescript/) | Browser, Bun/Node | ✅ Complete (Browser) |
-| 🟢 **Python** | excel2erp-python/ | CPython | 📋 Planned |
+| 🟢 **Python** | [excel2erp-python/](excel2erp-python/) | CPython | ✅ Complete |
 | 🔴 **Java** | excel2erp-java/ | JVM | 📋 Planned |
 | 🟠 **Scala** | excel2erp-scala/ | JVM, JS | 📋 Planned |
 
@@ -91,9 +91,15 @@ excel2erp/
 │   └── docs/                   # Website content (EN, ES, PT)
 │
 ├── excel2erp-kotlin/           # Kotlin implementation
+│   └── shared -> ../shared     # Symlink to shared resources
 ├── excel2erp-typescript/       # TypeScript implementation
+│   └── shared -> ../shared     # Symlink to shared resources
+├── excel2erp-python/           # Python implementation
+│   └── shared -> ../shared     # Symlink to shared resources
 └── ...                         # Future implementations
 ```
+
+> **Note:** Each implementation directory contains a `shared` symlink pointing to `../shared`. This allows each implementation to be self-contained (copy the directory and it works), while maintaining a single source of truth for configuration and test fixtures. Files that appear duplicated across implementations are actually symlinks.
 
 ---
 
