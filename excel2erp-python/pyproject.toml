@@ -1,0 +1,24 @@
+[project]
+name = "excel2erp"
+version = "1.0.0"
+description = "Metadata-driven Excel to ERP conversion"
+requires-python = ">=3.10"
+dependencies = [
+    "openpyxl>=3.1",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+excel2erp = "excel2erp:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["model", "config", "excel", "engine", "excel2erp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
