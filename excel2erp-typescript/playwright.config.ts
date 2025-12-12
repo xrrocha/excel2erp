@@ -42,7 +42,7 @@ export default defineConfig({
         // Start Kotlin server (excel2erp)
         // Run from pedidos-sap dir so ./assets path resolves correctly
         // TODO: Update paths for local environment
-        command: 'cd ../excel2erp-kotlin/demo && java -jar ../build/libs/excel2erp-1.0-SNAPSHOT-all.jar excel2erp.yml',
+        command: 'cd ../excel2erp-kotlin/demo && java -jar ../build/libs/excel2erp-1.0-SNAPSHOT-all.jar excel2erp.yaml',
         url: 'http://localhost:7070',  // Port from wb-server.yaml
         reuseExistingServer: !process.env.CI,
         timeout: 30000,

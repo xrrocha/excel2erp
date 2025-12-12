@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 class DataFlowTest {
 
     private val demoDir = File("demo")
-    private val configFile = File(demoDir, "excel2erp.yml")
+    private val configFile = File(demoDir, "excel2erp.yaml")
     private val dataDir = File(demoDir, "data")
 
     private val config: Model by lazy {
@@ -26,7 +26,7 @@ class DataFlowTest {
             .addModule(KotlinModule.Builder().build())
             .build()
         FileInputStream(configFile).use { input ->
-            mapper.readValue(input, Server::class.java).config
+            mapper.readValue(input, Model::class.java)
         }
     }
 

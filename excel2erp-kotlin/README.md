@@ -62,7 +62,7 @@ Then open http://localhost:9090 in your browser.
 ./gradlew build
 
 # Run
-java -jar build/libs/excel2erp-1.0-SNAPSHOT-all.jar demo/excel2erp.yml
+java -jar build/libs/excel2erp-1.0-SNAPSHOT-all.jar demo/excel2erp.yaml
 ```
 
 ### Native Binary (Optional)
@@ -72,7 +72,7 @@ java -jar build/libs/excel2erp-1.0-SNAPSHOT-all.jar demo/excel2erp.yml
 ./gradlew nativeCompile
 
 # Run (~2ms startup)
-./build/native/nativeCompile/excel2erp demo/excel2erp.yml
+./build/native/nativeCompile/excel2erp demo/excel2erp.yaml
 ```
 
 ## Configuration
@@ -105,7 +105,7 @@ sources:
           locator: QTY
 ```
 
-See [demo/excel2erp.yml](demo/excel2erp.yml) for a complete example.
+See [demo/excel2erp.yaml](demo/excel2erp.yaml) for a complete example.
 
 ## Additional Resources
 

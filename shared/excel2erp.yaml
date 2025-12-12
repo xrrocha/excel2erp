@@ -6,6 +6,7 @@ description: 'Productos Lácteos del Sur "Rey Pepinito". Pedidos ERP Excel'
 logo: rey-pepinito.png
 
 parameters:
+  htmx: https://unpkg.com/htmx.org@1.9.10
   source: Cliente
   workbook: Archivo pedido
   submit: Generar Archivo ERP

@@ -66,17 +66,18 @@ abstract class AbstractE2ETest {
     }
 
     private fun startEmbeddedServer() {
-        val configFile = File(demoDir, "excel2erp.yml")
+        val configFile = File(demoDir, "excel2erp.yaml")
         val mapper = tools.jackson.dataformat.yaml.YAMLMapper.builder()
             .addModule(tools.jackson.module.kotlin.KotlinModule.Builder().build())
             .build()
-        val serverConfig: Server = java.io.FileInputStream(configFile).use { input ->
-            mapper.readValue(input, Server::class.java)
+        val model: Model = java.io.FileInputStream(configFile).use { input ->
+            mapper.readValue(input, Model::class.java)
         }
         val testServer = Server(
             port = port,
+            host = "localhost",
             assetsDir = File(demoDir, "assets").absolutePath,
-            config = serverConfig.config
+            config = model
         )
         testServer.start()
     }
@@ -85,9 +86,9 @@ abstract class AbstractE2ETest {
         val jarFile = File("build/libs/excel2erp-1.0-SNAPSHOT-all.jar")
         require(jarFile.exists()) { "Uberjar not found: ${jarFile.absolutePath}. Run ./gradlew build first." }
 
-        val configFile = createTestConfig()
         val pb = ProcessBuilder(
-            "java", "-jar", jarFile.absolutePath, configFile.absolutePath
+            "java", "-jar", jarFile.absolutePath,
+            "excel2erp.yaml", "--port", port.toString(), "--basedir", demoDir.absolutePath
         ).directory(demoDir)
             .redirectErrorStream(true)
 
@@ -98,23 +99,13 @@ abstract class AbstractE2ETest {
         val nativeExec = File("build/native/nativeCompile/excel2erp")
         require(nativeExec.exists()) { "Native executable not found: ${nativeExec.absolutePath}. Run ./gradlew nativeCompile first." }
 
-        val configFile = createTestConfig()
-        val pb = ProcessBuilder(nativeExec.absolutePath, configFile.absolutePath)
-            .directory(demoDir)
+        val pb = ProcessBuilder(
+            nativeExec.absolutePath,
+            "excel2erp.yaml", "--port", port.toString(), "--basedir", demoDir.absolutePath
+        ).directory(demoDir)
             .redirectErrorStream(true)
 
         serverProcess = pb.start()
-    }
-
-    private fun createTestConfig(): File {
-        // Read original config and modify port
-        val originalConfig = File(demoDir, "excel2erp.yml").readText()
-        val modifiedConfig = originalConfig.replaceFirst(Regex("^port:\\s*\\d+", RegexOption.MULTILINE), "port: $port")
-
-        val tempConfig = File.createTempFile("test-config-", ".yaml")
-        tempConfig.deleteOnExit()
-        tempConfig.writeText(modifiedConfig)
-        return tempConfig
     }
 
     private fun waitForServerReady(timeoutSeconds: Int = 30) {

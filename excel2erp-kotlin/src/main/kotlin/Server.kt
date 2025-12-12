@@ -14,6 +14,7 @@ import kotlin.system.exitProcess
 
 data class Server(
     val port: Int = 7070,
+    val host: String = "0.0.0.0",
     val assetsDir: String = "./assets",
     val config: Model
 ) {
@@ -98,7 +99,7 @@ data class Server(
                     exitProcess(0)
                 }
 
-                start(port)
+                start(host, port)
             }
 
     private val index =
