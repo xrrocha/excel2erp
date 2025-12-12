@@ -10,7 +10,7 @@ class TestLoadConfig:
     def test_loads_canonical_config(self, config_path):
         config = load_config(str(config_path))
 
-        assert config.name == "excel2erp"
+        assert config.name == "pedidos"
         assert "Excel" in config.description
         assert len(config.sources) > 0
 
@@ -27,7 +27,7 @@ class TestLoadConfig:
     def test_parses_result_config(self, config_path):
         config = load_config(str(config_path))
 
-        assert config.result.separator == ";"
+        assert config.result.separator == "\t"
         assert config.result.base_name
         assert config.result.header.filename.endswith(".txt")
         assert config.result.detail.filename.endswith(".txt")

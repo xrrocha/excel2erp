@@ -28,8 +28,13 @@ Or run the bundled version (after `./init.sh`):
 |---------|---------|
 | **openpyxl** | Excel file reading (.xlsx) |
 | **PyYAML** | Configuration parsing |
+| **tkcalendar** | Date picker widget |
 
-**Note**: tkinter ships with Python — no additional installation required.
+**Note**: tkinter ships with Python on macOS and Windows. On Debian/Ubuntu, install it separately:
+
+```bash
+sudo apt-get install python3-tk
+```
 
 ### Build-time Dependencies
 
