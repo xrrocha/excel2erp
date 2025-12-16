@@ -25,7 +25,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     headless: !HEADED,            // Show browser when HEADED=1
     launchOptions: {
-      slowMo: HEADED ? 300 : 0,   // Slow down for visual inspection
+      slowMo: HEADED ? 800 : 0,   // Slow down for visual inspection
     },
   },
 

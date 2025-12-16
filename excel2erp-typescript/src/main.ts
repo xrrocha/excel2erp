@@ -8,6 +8,8 @@
 import Alpine from 'alpinejs';
 import { parseYamlConfig, getSourceConfig } from './config/loader';
 import { deriveRuntimeSources, type AppConfig, type RuntimeSource } from './config/types';
+import { getEmbeddedConfig, isEmbeddedBuild } from './config/embedded';
+import { resolveLogo } from './config/logos';
 import { processExcel } from './extraction/engine';
 import { downloadZip } from './output/zip';
 import { Excel2ErpError, createNetworkError, createConfigError, wrapError } from './validation/errors';
@@ -50,6 +52,7 @@ interface AppState {
 
   // Computed
   canSubmit: boolean;
+  isEmbedded: boolean;
 
   // Methods
   init(): Promise<void>;
@@ -65,6 +68,7 @@ interface AppState {
   clearMessages(): void;
   formatError(err: unknown): void;
   getSelectedSourceConfig(): { description: string; logo?: string } | null;
+  resolveLogo(path: string | undefined): string | undefined;
 }
 
 // Alpine.js app definition
@@ -95,6 +99,10 @@ Alpine.data('app', (): AppState => ({
     return true;
   },
 
+  get isEmbedded(): boolean {
+    return isEmbeddedBuild();
+  },
+
   clearMessages() {
     this.error = '';
     this.errorSuggestions = [];
@@ -121,6 +129,15 @@ Alpine.data('app', (): AppState => ({
     console.log('Excel2ERP app initializing...');
 
     try {
+      // Strategy 0: Check for embedded config (fat build)
+      const embedded = getEmbeddedConfig();
+      if (embedded) {
+        console.log('Using embedded configuration');
+        this.applyConfig(embedded.yaml, 'embedded');
+        this.loading = false;
+        return;
+      }
+
       // Get config URL from data attribute or query param
       const appElement = document.querySelector('[x-data="app()"]');
       const configUrl = appElement?.getAttribute('data-config')
@@ -400,6 +417,10 @@ Alpine.data('app', (): AppState => ({
   cancelPreview() {
     this.preview = null;
     this.warnings = [];
+  },
+
+  resolveLogo(path: string | undefined): string | undefined {
+    return resolveLogo(path);
   }
 }));
 

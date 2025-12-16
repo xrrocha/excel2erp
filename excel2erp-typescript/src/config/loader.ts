@@ -12,26 +12,36 @@ import type { AppConfig, SourceConfig, ResultConfig, SourceProperty, DetailConfi
 
 /**
  * Raw YAML structure as read from configuration file.
+ * Supports two formats:
+ * 1. Nested (legacy): { port?, assetsDir?, config: { name, ... } }
+ * 2. Flat (canonical): { name, description, ... }
  */
-interface RawYamlConfig {
+interface RawYamlConfigNested {
   port?: number;
   assetsDir?: string;
-  config: {
-    name: string;
-    description: string;
-    logo?: string;
-    parameters: {
-      htmx?: string;
-      source: string;
-      workbook: string;
-      submit: string;
-      successMessage?: string;
-      extractionError: string;
-    };
-    sources: RawSourceConfig[];
-    result: RawResultConfig;
-  };
+  config: RawYamlConfigFlat;
 }
+
+interface RawYamlConfigFlat {
+  name: string;
+  description: string;
+  logo?: string;
+  parameters: {
+    htmx?: string;
+    source: string;
+    workbook: string;
+    submit: string;
+    successMessage?: string;
+    extractionError?: string;
+    headerLabel?: string;
+    detailLabel?: string;
+    previewLabel?: string;
+  };
+  sources: RawSourceConfig[];
+  result: RawResultConfig;
+}
+
+type RawYamlConfig = RawYamlConfigNested | RawYamlConfigFlat;
 
 interface RawSourceConfig {
   name: string;
@@ -76,18 +86,30 @@ interface RawResultProperty {
 }
 
 /**
+ * Check if parsed YAML is nested format (has config wrapper).
+ */
+function isNestedConfig(raw: RawYamlConfig): raw is RawYamlConfigNested {
+  return 'config' in raw && raw.config !== undefined;
+}
+
+/**
  * Parse YAML config string into AppConfig.
+ * Supports both nested (legacy) and flat (canonical) formats.
  */
 export function parseYamlConfig(yamlString: string): AppConfig {
   const raw = YAML.parse(yamlString) as RawYamlConfig;
-  return transformConfig(raw.config);
+
+  // Detect structure and extract config object
+  const configData = isNestedConfig(raw) ? raw.config : raw;
+
+  return transformConfig(configData);
 }
 
 /**
  * Parse JSON config string into AppConfig.
  */
 export function parseJsonConfig(jsonString: string): AppConfig {
-  const raw = JSON.parse(jsonString) as RawYamlConfig['config'];
+  const raw = JSON.parse(jsonString) as RawYamlConfigFlat;
   return transformConfig(raw);
 }
 
@@ -114,7 +136,7 @@ export async function loadConfigFromUrl(url: string): Promise<AppConfig> {
 /**
  * Transform raw config to typed AppConfig.
  */
-function transformConfig(raw: RawYamlConfig['config']): AppConfig {
+function transformConfig(raw: RawYamlConfigFlat): AppConfig {
   return {
     name: raw.name,
     description: raw.description,
