@@ -9,7 +9,7 @@ import {
   formatCellValue,
   formatDate,
   formatNumber,
-} from '../../../src/excel/reader';
+} from '../../../src/shared/excel/reader';
 
 describe('parseCellAddress', () => {
   it('parses simple addresses', () => {

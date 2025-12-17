@@ -14,7 +14,7 @@ import {
   wrapError,
   validResult,
   invalidResult,
-} from '../../../src/validation/errors';
+} from '../../../src/shared/validation/errors';
 
 describe('Excel2ErpError', () => {
   it('creates error with all properties', () => {

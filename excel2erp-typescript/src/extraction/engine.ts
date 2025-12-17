@@ -4,8 +4,8 @@
  * Orchestrates Excel data extraction based on source configuration.
  */
 
-import { ExcelReader, ExcelSheet } from '../excel/reader';
-import type { SourceConfig, ResultConfig, SourceProperty } from '../config/types';
+import { ExcelReader, ExcelSheet } from '../shared/excel/reader';
+import type { SourceConfig, ResultConfig, SourceProperty } from '../shared/config/types';
 import {
   validateExcelFile,
   type ExcelValidationResult,
@@ -16,7 +16,7 @@ import {
   createValidationError,
   wrapError,
   type ValidationIssue,
-} from '../validation/errors';
+} from '../shared/validation/errors';
 
 /**
  * Extracted data from an Excel file.

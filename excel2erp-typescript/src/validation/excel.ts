@@ -5,7 +5,7 @@
  */
 
 import * as XLSX from 'xlsx';
-import type { SourceConfig } from '../config/types';
+import type { SourceConfig } from '../shared/config/types';
 import {
   createFileFormatError,
   createExtractionError,
@@ -14,7 +14,7 @@ import {
   type ValidationIssue,
   validResult,
   invalidResult,
-} from './errors';
+} from '../shared/validation/errors';
 
 /**
  * Supported Excel file extensions.

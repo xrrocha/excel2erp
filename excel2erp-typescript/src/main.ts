@@ -6,14 +6,14 @@
  */
 
 import Alpine from 'alpinejs';
-import { parseYamlConfig, getSourceConfig, deriveRuntimeSources } from './config/loader';
-import type { AppConfig, RuntimeSource } from './config/types';
+import { parseYamlConfig, getSourceConfig, deriveRuntimeSources } from './shared/config/loader';
+import type { AppConfig, RuntimeSource } from './shared/config/types';
 import { getEmbeddedConfig, isEmbeddedBuild } from './config/embedded';
 import { resolveLogo } from './config/logos';
 import { processExcel } from './extraction/engine';
 import { downloadZip } from './output/zip';
-import { Excel2ErpError, createNetworkError, createConfigError, wrapError } from './validation/errors';
-import type { ValidationIssue } from './validation/errors';
+import { Excel2ErpError, createNetworkError, createConfigError, wrapError } from './shared/validation/errors';
+import type { ValidationIssue } from './shared/validation/errors';
 
 // Configuration URL - can be overridden via data attribute or query param
 const DEFAULT_CONFIG_URL = '/excel2erp.yaml';

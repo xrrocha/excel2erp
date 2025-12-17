@@ -8,11 +8,11 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseYamlConfig, getSourceConfig } from '../../src/config/loader';
+import { parseYamlConfig, getSourceConfig } from '../../src/shared/config/loader';
 import { extractFromExcel, processExcel } from '../../src/extraction/engine';
 import { DEMO_USER_INPUTS, DEMO_SOURCES } from '../fixtures/demo-inputs';
 import { getDirname } from '../helpers/paths';
-import type { AppConfig } from '../../src/config/types';
+import type { AppConfig } from '../../src/shared/config/types';
 
 const __dirname = getDirname(import.meta.url);
 
