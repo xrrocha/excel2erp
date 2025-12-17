@@ -2,6 +2,7 @@ import Alpine from 'alpinejs';
 import type { AppConfig, SourceConfig, ResultProperty } from '../shared/config/types';
 import { parseYamlConfig } from '../shared/config/loader';
 import { ExcelReader, colToLetter } from '../shared/excel/reader';
+import { type SupportedLang, detectLanguage, saveLanguage, translate } from './i18n';
 
 /**
  * Editor navigation views
@@ -65,7 +66,6 @@ interface EditorState {
   dirty: boolean;
 
   // Excel viewer state
-  excelFile: File | null;
   excelFileName: string;
   workbook: ExcelReader | null;
   sheetNames: string[];
@@ -76,14 +76,20 @@ interface EditorState {
   visibleStartRow: number;
   columnWidths: number[];
 
-  // Hover state (for Phase 3 click-to-assign)
-  hoveredRow: number | null;
-  hoveredCol: number | null;
+  // Mapping popup state
+  showMappingPopup: boolean;
+  popupCellAddress: string;
+  popupCellValue: string;
 
   // UI state
   loading: boolean;
   error: string | null;
   sidebarCollapsed: boolean;
+
+  // i18n
+  lang: SupportedLang;
+  t(key: string): string;
+  setLang(lang: SupportedLang): void;
 
   // Computed
   get canSave(): boolean;
@@ -96,6 +102,7 @@ interface EditorState {
   get visibleEndRow(): number;
   get columnLetters(): string[];
   get visibleSheetData(): CellValue[][];
+  get mappableHeaderFields(): { name: string; isMapped: boolean }[];
 
   // Methods
   init(): Promise<void>;
@@ -106,25 +113,29 @@ interface EditorState {
   navigateTo(view: EditorView, sourceName?: string): void;
   toggleSidebar(): void;
   markDirty(): void;
-  getValueSource(prop: ResultProperty, section: 'header' | 'detail'): { source: ValueSource; label: string };
+  clearExcelState(): void;
+  onCellClick(rowIndex: number, colIndex: number): void;
+  assignToHeaderField(fieldName: string): void;
+  closeMappingPopup(): void;
 }
 
 /**
- * Determine the value source for a result property
+ * Determine the value source for a result property.
+ * Returns source type only; label is resolved via i18n in the UI layer.
  */
 function classifyValueSource(
   prop: ResultProperty,
   section: 'header' | 'detail',
   sources: SourceConfig[]
-): { source: ValueSource; label: string } {
+): ValueSource {
   // Row index special case
   if (prop.defaultValue === '${index}') {
-    return { source: 'row-index', label: 'Row number' };
+    return 'row-index';
   }
 
   // Has a fixed default value (constant)
   if (prop.defaultValue !== undefined) {
-    return { source: 'constant', label: `Always: ${prop.defaultValue}` };
+    return 'constant';
   }
 
   // Check if any source extracts this from Excel
@@ -136,26 +147,50 @@ function classifyValueSource(
     }
   });
 
+  if (isExtractedFromExcel) {
+    return 'from-excel';
+  }
+
   // Check if any source has a defaultValue for this
   const hasSourceDefault = sources.some(
     (src) => src.defaultValues && prop.name in src.defaultValues
   );
 
-  if (isExtractedFromExcel) {
-    return { source: 'from-excel', label: 'From Excel' };
-  }
-
   if (hasSourceDefault) {
-    return { source: 'per-source', label: 'Per source' };
+    return 'per-source';
   }
 
   // Has a prompt, needs user input
   if (prop.prompt) {
-    return { source: 'user-input', label: 'User enters' };
+    return 'user-input';
   }
 
   // Fallback
-  return { source: 'from-excel', label: 'From Excel' };
+  return 'from-excel';
+}
+
+/**
+ * Build PropertyInfo from a ResultProperty.
+ */
+function toPropertyInfo(
+  prop: ResultProperty,
+  section: 'header' | 'detail',
+  sources: SourceConfig[],
+  t: (key: string) => string
+): PropertyInfo {
+  const source = classifyValueSource(prop, section, sources);
+  const sourceLabel = source === 'constant'
+    ? `${t('source.constant')} ${prop.defaultValue}`
+    : t(`source.${source === 'from-excel' ? 'fromExcel' : source === 'per-source' ? 'perSource' : source === 'user-input' ? 'userInput' : 'rowIndex'}`);
+
+  return {
+    name: prop.name,
+    type: prop.type || 'text',
+    source,
+    sourceLabel,
+    value: prop.defaultValue,
+    prompt: prop.prompt,
+  };
 }
 
 /**
@@ -173,7 +208,6 @@ function createEditorApp(): EditorState {
     dirty: false,
 
     // Excel viewer state
-    excelFile: null,
     excelFileName: '',
     workbook: null,
     sheetNames: [],
@@ -184,14 +218,27 @@ function createEditorApp(): EditorState {
     visibleStartRow: 0,
     columnWidths: [],
 
-    // Hover state (for Phase 3)
-    hoveredRow: null,
-    hoveredCol: null,
+    // Mapping popup state
+    showMappingPopup: false,
+    popupCellAddress: '',
+    popupCellValue: '',
 
     // UI state
     loading: false,
     error: null,
     sidebarCollapsed: false,
+
+    // i18n
+    lang: detectLanguage(),
+
+    t(key: string): string {
+      return translate(this.lang, key);
+    },
+
+    setLang(lang: SupportedLang): void {
+      this.lang = lang;
+      saveLanguage(lang);
+    },
 
     // Computed
     get canSave(): boolean {
@@ -204,32 +251,16 @@ function createEditorApp(): EditorState {
 
     get headerProperties(): PropertyInfo[] {
       if (!this.config) return [];
-      return this.config.result.header.properties.map((prop) => {
-        const { source, label } = this.getValueSource(prop, 'header');
-        return {
-          name: prop.name,
-          type: prop.type || 'text',
-          source,
-          sourceLabel: label,
-          value: prop.defaultValue,
-          prompt: prop.prompt,
-        };
-      });
+      return this.config.result.header.properties.map((prop) =>
+        toPropertyInfo(prop, 'header', this.config!.sources, (k) => this.t(k))
+      );
     },
 
     get detailProperties(): PropertyInfo[] {
       if (!this.config) return [];
-      return this.config.result.detail.properties.map((prop) => {
-        const { source, label } = this.getValueSource(prop, 'detail');
-        return {
-          name: prop.name,
-          type: prop.type || 'text',
-          source,
-          sourceLabel: label,
-          value: prop.defaultValue,
-          prompt: prop.prompt,
-        };
-      });
+      return this.config.result.detail.properties.map((prop) =>
+        toPropertyInfo(prop, 'detail', this.config!.sources, (k) => this.t(k))
+      );
     },
 
     get sourceCards(): SourceCardInfo[] {
@@ -296,6 +327,23 @@ function createEditorApp(): EditorState {
       return this.sheetData.slice(this.visibleStartRow, this.visibleEndRow);
     },
 
+    get mappableHeaderFields(): { name: string; isMapped: boolean }[] {
+      if (!this.config || !this.selectedSource) return [];
+
+      // Get header fields that can be assigned from Excel (no defaultValue)
+      const assignableFields = this.config.result.header.properties
+        .filter((p) => p.defaultValue === undefined)
+        .map((p) => p.name);
+
+      // Check which are already mapped in the current source
+      const mappedFields = new Set(this.selectedSource.header.map((h) => h.name));
+
+      return assignableFields.map((name) => ({
+        name,
+        isMapped: mappedFields.has(name),
+      }));
+    },
+
     // Methods
     async init(): Promise<void> {
       console.log('Config Editor initialized');
@@ -328,7 +376,6 @@ function createEditorApp(): EditorState {
       try {
         const buffer = await file.arrayBuffer();
         this.workbook = new ExcelReader(buffer);
-        this.excelFile = file;
         this.excelFileName = file.name;
         this.sheetNames = this.workbook.sheetNames;
         this.selectedSheetIndex = 0;
@@ -337,11 +384,7 @@ function createEditorApp(): EditorState {
         console.log('Excel loaded:', file.name, `(${this.sheetNames.length} sheets)`);
       } catch (err) {
         this.error = err instanceof Error ? err.message : 'Failed to parse Excel file';
-        this.workbook = null;
-        this.excelFile = null;
-        this.excelFileName = '';
-        this.sheetNames = [];
-        this.sheetData = [];
+        this.clearExcelState();
       } finally {
         this.loading = false;
       }
@@ -414,13 +457,7 @@ function createEditorApp(): EditorState {
     navigateTo(view: EditorView, sourceName?: string): void {
       // Clear Excel state when leaving source-detail view
       if (this.currentView === 'source-detail' && view !== 'source-detail') {
-        this.workbook = null;
-        this.excelFile = null;
-        this.excelFileName = '';
-        this.sheetNames = [];
-        this.sheetData = [];
-        this.totalRows = 0;
-        this.totalCols = 0;
+        this.clearExcelState();
       }
 
       this.currentView = view;
@@ -435,9 +472,51 @@ function createEditorApp(): EditorState {
       this.dirty = true;
     },
 
-    getValueSource(prop: ResultProperty, section: 'header' | 'detail') {
-      if (!this.config) return { source: 'from-excel' as ValueSource, label: 'Unknown' };
-      return classifyValueSource(prop, section, this.config.sources);
+    clearExcelState(): void {
+      this.workbook = null;
+      this.excelFileName = '';
+      this.sheetNames = [];
+      this.sheetData = [];
+      this.totalRows = 0;
+      this.totalCols = 0;
+      this.visibleStartRow = 0;
+      this.columnWidths = [];
+    },
+
+    onCellClick(rowIndex: number, colIndex: number): void {
+      if (!this.workbook) return;
+
+      // Calculate actual row in sheet (accounting for scroll)
+      const actualRow = this.visibleStartRow + rowIndex;
+      this.popupCellAddress = colToLetter(colIndex) + (actualRow + 1);
+      this.popupCellValue = String(this.sheetData[actualRow]?.[colIndex] ?? '');
+      this.showMappingPopup = true;
+    },
+
+    assignToHeaderField(fieldName: string): void {
+      if (!this.config || !this.selectedSource) return;
+
+      // Find the source in config and update its header mapping
+      const source = this.config.sources.find((s) => s.name === this.selectedSourceName);
+      if (!source) return;
+
+      // Remove existing mapping for this field (if any)
+      source.header = source.header.filter((h) => h.name !== fieldName);
+
+      // Add new mapping
+      source.header.push({
+        name: fieldName,
+        cell: this.popupCellAddress,
+      });
+
+      this.markDirty();
+      this.closeMappingPopup();
+    },
+
+    closeMappingPopup(): void {
+      this.showMappingPopup = false;
+      this.popupCellAddress = '';
+      this.popupCellValue = '';
     },
   };
 }

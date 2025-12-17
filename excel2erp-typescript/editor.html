@@ -650,6 +650,16 @@
       margin-bottom: 0;
     }
 
+    .mapping-section.header-section {
+      border-left: 3px solid var(--primary);
+      padding-left: var(--space-sm);
+    }
+
+    .mapping-section.detail-section {
+      border-left: 3px solid var(--gray-400);
+      padding-left: var(--space-sm);
+    }
+
     .mapping-section-title {
       font-size: 0.75rem;
       font-weight: 600;
@@ -926,6 +936,216 @@
       font-size: 0.875rem;
       margin-bottom: var(--space-md);
     }
+
+    /* ===== Language Switcher ===== */
+    .lang-switcher {
+      display: flex;
+      align-items: stretch;
+      margin-right: var(--space-sm);
+    }
+
+    .lang-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 0.25rem 0.75rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      opacity: 0.5;
+    }
+
+    .lang-btn:first-child {
+      border-right: 1px solid var(--gray-300);
+    }
+
+    .lang-btn:hover {
+      opacity: 0.8;
+    }
+
+    .lang-btn.active {
+      opacity: 1;
+    }
+
+    .lang-flag {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .lang-label {
+      font-size: 0.625rem;
+      font-weight: 500;
+      color: var(--gray-600);
+      text-transform: lowercase;
+    }
+
+    .lang-btn.active .lang-label {
+      color: var(--gray-900);
+    }
+
+    /* ===== Mapping Popup ===== */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .popup {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      min-width: 300px;
+      max-width: 400px;
+    }
+
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .popup-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    .popup-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: none;
+      color: var(--gray-400);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+
+    .popup-close:hover {
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+
+    .popup-close svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .popup-body {
+      padding: var(--space-lg);
+    }
+
+    .popup-cell-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      padding: var(--space-md);
+      background: var(--primary-light);
+      border-radius: var(--radius-md);
+    }
+
+    .popup-cell-address {
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: ui-monospace, monospace;
+      color: var(--primary);
+    }
+
+    .popup-cell-value {
+      flex: 1;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      word-break: break-word;
+    }
+
+    .popup-cell-label {
+      font-size: 0.625rem;
+      font-weight: 600;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+
+    .popup-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      margin-bottom: var(--space-sm);
+    }
+
+    .popup-field-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .popup-field-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      background: white;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+
+    .popup-field-btn:hover:not(.mapped) {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .popup-field-btn.mapped {
+      background: var(--gray-50);
+      color: var(--gray-400);
+      cursor: not-allowed;
+    }
+
+    .popup-field-name {
+      font-weight: 500;
+      font-family: ui-monospace, monospace;
+    }
+
+    .popup-field-status {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--gray-400);
+    }
+
+    .popup-empty {
+      font-size: 0.875rem;
+      color: var(--gray-400);
+      font-style: italic;
+      padding: var(--space-md);
+      text-align: center;
+    }
+
+    .popup-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: var(--space-md) var(--space-lg);
+      border-top: 1px solid var(--gray-200);
+    }
   </style>
 </head>
 <body x-data="editor" x-init="init()">
@@ -938,7 +1158,19 @@
   <template x-if="!config && !loading">
     <div class="app-layout" style="grid-template-columns: 1fr;">
       <div class="header">
-        <span class="header-title">Excel2ERP Config Editor</span>
+        <span class="header-title" x-text="t('app.title')"></span>
+        <div class="header-actions">
+          <div class="lang-switcher">
+            <button class="lang-btn" :class="{ active: lang === 'en' }" @click="setLang('en')">
+              <span class="lang-flag">🇬🇧</span>
+              <span class="lang-label">english</span>
+            </button>
+            <button class="lang-btn" :class="{ active: lang === 'es' }" @click="setLang('es')">
+              <span class="lang-flag">🇪🇸</span>
+              <span class="lang-label">español</span>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="main-content">
         <div class="config-picker">
@@ -947,22 +1179,20 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
           </div>
-          <h2 class="config-picker-title">Open Configuration</h2>
-          <p class="config-picker-text">
-            Load an existing excel2erp YAML configuration to view and edit, or start fresh to create a new one.
-          </p>
+          <h2 class="config-picker-title" x-text="t('picker.title')"></h2>
+          <p class="config-picker-text" x-text="t('picker.description')"></p>
           <label class="file-input-wrapper">
             <input type="file" accept=".yaml,.yml" @change="loadConfig($event.target.files[0])">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
             </svg>
-            <span>Choose YAML file</span>
+            <span x-text="t('picker.button')"></span>
           </label>
         </div>
 
         <!-- Error -->
         <div x-show="error" class="error-banner" x-cloak>
-          <strong>Error:</strong> <span x-text="error"></span>
+          <strong x-text="t('error.prefix')"></strong> <span x-text="error"></span>
         </div>
       </div>
     </div>
@@ -973,26 +1203,36 @@
     <div class="app-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
       <!-- Header -->
       <div class="header">
-        <button class="hamburger-btn" @click="toggleSidebar()" :title="sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'">
+        <button class="hamburger-btn" @click="toggleSidebar()" :title="sidebarCollapsed ? t('header.showSidebar') : t('header.hideSidebar')">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
         <span class="header-title" x-text="config.name || 'Untitled'"></span>
         <span class="header-subtitle" x-text="configFileName"></span>
-        <div x-show="dirty" class="dirty-indicator" title="Unsaved changes"></div>
+        <div x-show="dirty" class="dirty-indicator" :title="t('header.unsaved')"></div>
         <div class="header-actions">
+          <div class="lang-switcher">
+            <button class="lang-btn" :class="{ active: lang === 'en' }" @click="setLang('en')">
+              <span class="lang-flag">🇬🇧</span>
+              <span class="lang-label">english</span>
+            </button>
+            <button class="lang-btn" :class="{ active: lang === 'es' }" @click="setLang('es')">
+              <span class="lang-flag">🇪🇸</span>
+              <span class="lang-label">español</span>
+            </button>
+          </div>
           <button class="btn btn-secondary" @click="config = null; configFileName = null;">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
             </svg>
-            Open
+            <span x-text="t('header.open')"></span>
           </button>
           <button class="btn btn-primary" :disabled="!canSave">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
-            Save
+            <span x-text="t('header.save')"></span>
           </button>
         </div>
       </div>
@@ -1007,11 +1247,11 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
-          Output Schema
+          <span x-text="t('nav.schema')"></span>
         </button>
 
         <div class="nav-divider"></div>
-        <div class="nav-section-title">Sources</div>
+        <div class="nav-section-title" x-text="t('nav.sourcesSection')"></div>
 
         <button
           class="nav-item"
@@ -1021,7 +1261,7 @@
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
           </svg>
-          All Sources
+          <span x-text="t('nav.sources')"></span>
           <span class="nav-badge" x-text="sourceCount"></span>
         </button>
 
@@ -1044,23 +1284,23 @@
         <div x-show="currentView === 'schema'">
           <div class="card">
             <div class="card-header">
-              <span class="card-title">Output Schema</span>
+              <span class="card-title" x-text="t('schema.title')"></span>
               <span class="schema-filename" x-text="config.result?.header?.filename || 'header'"></span>
             </div>
             <div class="card-body">
               <!-- Header section -->
               <div class="schema-section">
                 <div class="schema-section-header">
-                  <span class="schema-section-title">Header Fields</span>
-                  <span class="schema-section-count" x-text="`(${headerProperties.length} fields)`"></span>
+                  <span class="schema-section-title" x-text="t('schema.headerFields')"></span>
+                  <span class="schema-section-count" x-text="`(${headerProperties.length} ${t('schema.fields')})`"></span>
                 </div>
                 <table class="property-table">
                   <thead>
                     <tr>
-                      <th>Field</th>
-                      <th>Type</th>
-                      <th>Source</th>
-                      <th>Notes</th>
+                      <th x-text="t('table.field')"></th>
+                      <th x-text="t('table.type')"></th>
+                      <th x-text="t('table.source')"></th>
+                      <th x-text="t('table.notes')"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1083,16 +1323,16 @@
               <!-- Detail section -->
               <div class="schema-section">
                 <div class="schema-section-header">
-                  <span class="schema-section-title">Detail Fields</span>
-                  <span class="schema-section-count" x-text="`(${detailProperties.length} fields)`"></span>
+                  <span class="schema-section-title" x-text="t('schema.detailFields')"></span>
+                  <span class="schema-section-count" x-text="`(${detailProperties.length} ${t('schema.fields')})`"></span>
                 </div>
                 <table class="property-table">
                   <thead>
                     <tr>
-                      <th>Field</th>
-                      <th>Type</th>
-                      <th>Source</th>
-                      <th>Notes</th>
+                      <th x-text="t('table.field')"></th>
+                      <th x-text="t('table.type')"></th>
+                      <th x-text="t('table.source')"></th>
+                      <th x-text="t('table.notes')"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1119,8 +1359,8 @@
         <div x-show="currentView === 'sources'">
           <div class="card">
             <div class="card-header">
-              <span class="card-title">Sources</span>
-              <span class="schema-section-count" x-text="`(${sourceCount} configured)`"></span>
+              <span class="card-title" x-text="t('sources.title')"></span>
+              <span class="schema-section-count" x-text="`(${sourceCount} ${t('sources.configured')})`"></span>
             </div>
             <div class="card-body">
               <div class="source-grid">
@@ -1158,7 +1398,7 @@
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                       </template>
-                      <span x-text="card.headerMappedCount + card.detailMappedCount + ' fields mapped'"></span>
+                      <span x-text="(card.headerMappedCount + card.detailMappedCount) + ' ' + t('sources.fieldsMapped')"></span>
                     </div>
                   </div>
                 </template>
@@ -1166,7 +1406,7 @@
 
               <!-- Empty state -->
               <div x-show="sourceCards.length === 0" class="placeholder-content">
-                <p>No sources configured yet</p>
+                <p x-text="t('sources.empty')"></p>
               </div>
             </div>
           </div>
@@ -1192,14 +1432,14 @@
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  <span x-text="excelFileName || 'Load Sample Excel'"></span>
+                  <span x-text="excelFileName || t('detail.loadExcel')"></span>
                 </label>
 
                 <button class="btn btn-secondary" @click="navigateTo('sources')">
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                   </svg>
-                  Back
+                  <span x-text="t('detail.back')"></span>
                 </button>
               </div>
 
@@ -1208,8 +1448,8 @@
                 <!-- Header and Detail mappings side-by-side -->
                 <div class="mappings-row">
                   <!-- Header mappings -->
-                  <div class="mapping-section">
-                    <div class="mapping-section-title">Header Mappings</div>
+                  <div class="mapping-section header-section">
+                    <div class="mapping-section-title" x-text="t('detail.headerMappings')"></div>
                     <div class="mapping-list">
                       <template x-for="mapping in selectedSource.header" :key="mapping.name">
                         <div class="mapping-item">
@@ -1218,17 +1458,15 @@
                           <span class="mapping-locator" x-text="mapping.cell || mapping.range || mapping.value || '—'"></span>
                         </div>
                       </template>
-                      <div x-show="!selectedSource.header || selectedSource.header.length === 0" class="mapping-empty">
-                        No header mappings
-                      </div>
+                      <div x-show="!selectedSource.header || selectedSource.header.length === 0" class="mapping-empty" x-text="t('detail.noHeaderMappings')"></div>
                     </div>
                   </div>
 
                   <!-- Detail mappings -->
-                  <div class="mapping-section">
+                  <div class="mapping-section detail-section">
                     <div class="mapping-section-title">
-                      Detail Mappings
-                      <span style="font-weight: normal; text-transform: none;" x-text="`(row ${selectedSource.detail?.startRow || '?'})`"></span>
+                      <span x-text="t('detail.detailMappings')"></span>
+                      <span style="font-weight: normal; text-transform: none;" x-text="`(${t('detail.row')} ${selectedSource.detail?.startRow || '?'})`"></span>
                     </div>
                     <div class="mapping-list">
                       <template x-for="mapping in selectedSource.detail?.properties || []" :key="mapping.name">
@@ -1238,9 +1476,7 @@
                           <span class="mapping-locator" x-text="mapping.column || mapping.value || '—'"></span>
                         </div>
                       </template>
-                      <div x-show="!selectedSource.detail?.properties || selectedSource.detail.properties.length === 0" class="mapping-empty">
-                        No detail mappings
-                      </div>
+                      <div x-show="!selectedSource.detail?.properties || selectedSource.detail.properties.length === 0" class="mapping-empty" x-text="t('detail.noDetailMappings')"></div>
                     </div>
                   </div>
                 </div>
@@ -1248,7 +1484,7 @@
                 <!-- Default values (inline, compact) -->
                 <div class="mappings-row" x-show="selectedSource.defaultValues && Object.keys(selectedSource.defaultValues).length > 0">
                   <div class="mapping-section" style="grid-column: 1 / -1;">
-                    <div class="mapping-section-title">Default Values</div>
+                    <div class="mapping-section-title" x-text="t('detail.defaultValues')"></div>
                     <div class="mapping-list" style="flex-direction: row; flex-wrap: wrap; gap: var(--space-xs);">
                       <template x-for="[key, value] in Object.entries(selectedSource.defaultValues || {})" :key="key">
                         <div class="mapping-item" style="flex: 0 0 auto;">
@@ -1265,7 +1501,7 @@
               <!-- Excel Viewer Section -->
               <div class="excel-section">
                 <div class="excel-section-header">
-                  <span class="excel-section-title">Sample Excel</span>
+                  <span class="excel-section-title" x-text="t('excel.title')"></span>
                   <span x-show="excelFileName" class="excel-filename" x-text="excelFileName"></span>
                 </div>
 
@@ -1274,7 +1510,7 @@
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                   </svg>
-                  <p class="excel-empty-text">Load a sample Excel file to preview data and configure mappings</p>
+                  <p class="excel-empty-text" x-text="t('excel.empty')"></p>
                 </div>
 
                 <!-- Excel viewer: sheet tabs + grid -->
@@ -1310,7 +1546,7 @@
                           <tr>
                             <td class="row-header" x-text="visibleStartRow + rowIndex + 1"></td>
                             <template x-for="(cell, colIndex) in row" :key="colIndex">
-                              <td x-text="cell" :title="cell"></td>
+                              <td x-text="cell" :title="cell" @click="onCellClick(rowIndex, colIndex)"></td>
                             </template>
                             <!-- Fill empty cells if row is shorter than max columns -->
                             <template x-for="i in Math.max(0, totalCols - row.length)" :key="'empty-' + i">
@@ -1323,13 +1559,13 @@
 
                     <!-- Footer with row info and scroll controls -->
                     <div class="excel-footer">
-                      <span x-text="`Showing rows ${visibleStartRow + 1}-${visibleEndRow} of ${totalRows}`"></span>
+                      <span x-text="`${t('excel.showingRows')} ${visibleStartRow + 1}-${visibleEndRow} ${t('excel.of')} ${totalRows}`"></span>
                       <div class="excel-scroll-controls">
                         <button
                           class="excel-scroll-btn"
                           @click="scrollExcel('up')"
                           :disabled="visibleStartRow === 0"
-                          title="Previous rows"
+                          :title="t('excel.prevRows')"
                         >
                           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -1339,7 +1575,7 @@
                           class="excel-scroll-btn"
                           @click="scrollExcel('down')"
                           :disabled="visibleEndRow >= totalRows"
-                          title="Next rows"
+                          :title="t('excel.nextRows')"
                         >
                           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -1356,6 +1592,55 @@
       </div>
     </div>
   </template>
+
+  <!-- Mapping Popup -->
+  <div x-show="showMappingPopup" class="popup-overlay" x-cloak @click.self="closeMappingPopup()">
+    <div class="popup">
+      <div class="popup-header">
+        <span class="popup-title" x-text="t('popup.title')"></span>
+        <button class="popup-close" @click="closeMappingPopup()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="popup-body">
+        <!-- Cell info -->
+        <div class="popup-cell-info">
+          <div>
+            <div class="popup-cell-label" x-text="t('popup.cell')"></div>
+            <div class="popup-cell-address" x-text="popupCellAddress"></div>
+          </div>
+          <div class="popup-cell-value">
+            <div class="popup-cell-label" x-text="t('popup.value')"></div>
+            <span x-text="popupCellValue || '—'"></span>
+          </div>
+        </div>
+
+        <!-- Field list -->
+        <div class="popup-section-title" x-text="t('popup.assignTo')"></div>
+        <div class="popup-field-list">
+          <template x-for="field in mappableHeaderFields" :key="field.name">
+            <button
+              class="popup-field-btn"
+              :class="{ mapped: field.isMapped }"
+              @click="!field.isMapped && assignToHeaderField(field.name)"
+              :disabled="field.isMapped"
+            >
+              <span class="popup-field-name" x-text="field.name"></span>
+              <span x-show="field.isMapped" class="popup-field-status" x-text="t('popup.alreadyMapped')"></span>
+            </button>
+          </template>
+          <div x-show="mappableHeaderFields.length === 0" class="popup-empty" x-text="t('popup.noFields')"></div>
+        </div>
+      </div>
+      <div class="popup-footer">
+        <button class="btn btn-secondary" @click="closeMappingPopup()">
+          <span x-text="t('popup.cancel')"></span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="/src/editor/main.ts"></script>
 </body>
