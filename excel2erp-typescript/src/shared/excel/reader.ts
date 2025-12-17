@@ -113,12 +113,12 @@ export function formatNumber(num: number): string {
     return num.toString();
   }
 
-  // Round to 2 decimal places and remove trailing zeros
+  // Round to 2 decimal places
   const rounded = Math.round(num * 100) / 100;
-  const str = rounded.toFixed(2);
 
-  // Remove trailing zeros after decimal point
-  return str.replace(/\.?0+$/, '') || '0';
+  // Format with up to 2 decimal places, removing trailing zeros
+  // Using parseFloat(toFixed) avoids regex backtracking issues
+  return String(parseFloat(rounded.toFixed(2)));
 }
 
 /**
@@ -281,10 +281,10 @@ export class ExcelSheet {
  */
 function isDateFormat(format: string): boolean {
   // Common date format patterns
-  const datePatterns = [
-    /[dmy]/i,           // Contains d, m, or y
-    /\[.*\]/,           // Contains locale-specific markers like [DBNum1]
-  ];
+  const hasDateChars = /[dmy]/i;           // Contains d, m, or y
+  // eslint-disable-next-line sonarjs/slow-regex -- negated char class [^\]]* is O(n), not exponential
+  const hasLocaleMarker = /\[[^\]]*\]/;    // Contains locale-specific markers like [DBNum1]
+  const datePatterns = [hasDateChars, hasLocaleMarker];
 
   // Patterns that indicate NOT a date (even if containing d/m/y)
   const notDatePatterns = [

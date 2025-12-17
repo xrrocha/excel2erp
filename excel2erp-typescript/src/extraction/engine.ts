@@ -6,13 +6,9 @@
 
 import { ExcelReader, ExcelSheet } from '../shared/excel/reader';
 import type { SourceConfig, ResultConfig, SourceProperty } from '../shared/config/types';
-import {
-  validateExcelFile,
-  type ExcelValidationResult,
-} from '../validation/excel';
+import { validateExcelFile } from '../validation/excel';
 import {
   Excel2ErpError,
-  createExtractionError,
   createValidationError,
   wrapError,
   type ValidationIssue,

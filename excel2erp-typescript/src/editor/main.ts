@@ -170,6 +170,17 @@ function classifyValueSource(
 }
 
 /**
+ * Map ValueSource to i18n key suffix.
+ */
+const SOURCE_I18N_KEYS: Record<ValueSource, string> = {
+  'constant': 'constant',
+  'from-excel': 'fromExcel',
+  'per-source': 'perSource',
+  'user-input': 'userInput',
+  'row-index': 'rowIndex',
+};
+
+/**
  * Build PropertyInfo from a ResultProperty.
  */
 function toPropertyInfo(
@@ -181,7 +192,7 @@ function toPropertyInfo(
   const source = classifyValueSource(prop, section, sources);
   const sourceLabel = source === 'constant'
     ? `${t('source.constant')} ${prop.defaultValue}`
-    : t(`source.${source === 'from-excel' ? 'fromExcel' : source === 'per-source' ? 'perSource' : source === 'user-input' ? 'userInput' : 'rowIndex'}`);
+    : t(`source.${SOURCE_I18N_KEYS[source]}`);
 
   return {
     name: prop.name,

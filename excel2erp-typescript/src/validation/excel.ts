@@ -7,9 +7,6 @@
 import * as XLSX from 'xlsx';
 import type { SourceConfig } from '../shared/config/types';
 import {
-  createFileFormatError,
-  createExtractionError,
-  createValidationError,
   type ValidationResult,
   type ValidationIssue,
   validResult,

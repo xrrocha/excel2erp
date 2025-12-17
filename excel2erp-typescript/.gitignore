@@ -6,3 +6,4 @@ src/config/embedded.generated.ts
 
 # Playwright snapshots (local, platform-specific)
 *-snapshots/
+coverage/

@@ -12,7 +12,7 @@ import { getEmbeddedConfig, isEmbeddedBuild } from './config/embedded';
 import { resolveLogo } from './config/logos';
 import { processExcel } from './extraction/engine';
 import { downloadZip } from './output/zip';
-import { Excel2ErpError, createNetworkError, createConfigError, wrapError } from './shared/validation/errors';
+import { Excel2ErpError, createConfigError } from './shared/validation/errors';
 import type { ValidationIssue } from './shared/validation/errors';
 
 // Configuration URL - can be overridden via data attribute or query param
