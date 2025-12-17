@@ -23,8 +23,9 @@ export default defineConfig({
   server: {
     port: 5174,
     fs: {
-      allow: ['.'],
+      allow: ['.', 'tests/fixtures'],
     },
   },
-  publicDir: false,
+  // Serve demo fixtures as static assets for logo preview
+  publicDir: 'tests/fixtures/demo/assets',
 });

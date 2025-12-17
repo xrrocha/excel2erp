@@ -377,6 +377,267 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Property Table ===== */
+    .property-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .property-table th {
+      text-align: left;
+      padding: var(--space-sm) var(--space-md);
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      font-weight: 600;
+      color: var(--gray-600);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .property-table td {
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .property-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .property-table tr:hover td {
+      background: var(--gray-50);
+    }
+
+    .prop-name {
+      font-weight: 500;
+      font-family: ui-monospace, monospace;
+    }
+
+    .prop-type {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      background: var(--gray-100);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      color: var(--gray-600);
+    }
+
+    .prop-source {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+    }
+
+    .prop-source-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .prop-source.constant { color: var(--gray-500); }
+    .prop-source.from-excel { color: var(--primary); }
+    .prop-source.per-source { color: #7c3aed; }
+    .prop-source.user-input { color: var(--warning); }
+    .prop-source.row-index { color: var(--gray-500); }
+
+    .prop-prompt {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      font-style: italic;
+    }
+
+    /* Section headers in schema */
+    .schema-section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .schema-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .schema-section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-sm);
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .schema-section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    .schema-section-count {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+    }
+
+    .schema-filename {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      font-family: ui-monospace, monospace;
+    }
+
+    /* ===== Source Cards ===== */
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+
+    .source-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .source-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .source-card-logo {
+      width: 100%;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: var(--space-sm);
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+    }
+
+    .source-card-logo-placeholder {
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-100);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-sm);
+      color: var(--gray-400);
+    }
+
+    .source-card-name {
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: 0.25rem;
+    }
+
+    .source-card-id {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      font-family: ui-monospace, monospace;
+      margin-bottom: var(--space-sm);
+    }
+
+    .source-card-status {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+    }
+
+    .source-card-status.complete { color: var(--success); }
+    .source-card-status.partial { color: var(--warning); }
+    .source-card-status.empty { color: var(--gray-400); }
+
+    .source-card-status svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ===== Source Detail ===== */
+    .source-detail-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .source-detail-logo {
+      width: 80px;
+      height: 50px;
+      object-fit: contain;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+    }
+
+    .source-detail-info {
+      flex: 1;
+    }
+
+    .source-detail-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+
+    .source-detail-id {
+      font-size: 0.8125rem;
+      color: var(--gray-500);
+      font-family: ui-monospace, monospace;
+    }
+
+    .mapping-section {
+      margin-bottom: var(--space-lg);
+    }
+
+    .mapping-section-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: var(--space-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .mapping-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .mapping-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-xs) var(--space-sm);
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+    }
+
+    .mapping-field {
+      font-weight: 500;
+      font-family: ui-monospace, monospace;
+    }
+
+    .mapping-arrow {
+      color: var(--gray-400);
+    }
+
+    .mapping-locator {
+      color: var(--primary);
+      font-family: ui-monospace, monospace;
+    }
+
+    .mapping-empty {
+      color: var(--gray-400);
+      font-style: italic;
+      font-size: 0.8125rem;
+    }
   </style>
 </head>
 <body x-data="editor" x-init="init()">
@@ -491,19 +752,71 @@
           <div class="card">
             <div class="card-header">
               <span class="card-title">Output Schema</span>
+              <span class="schema-filename" x-text="config.result?.header?.filename || 'header'"></span>
             </div>
             <div class="card-body">
-              <div class="placeholder-content">
-                <div class="placeholder-icon">
-                  <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                  </svg>
+              <!-- Header section -->
+              <div class="schema-section">
+                <div class="schema-section-header">
+                  <span class="schema-section-title">Header Fields</span>
+                  <span class="schema-section-count" x-text="`(${headerProperties.length} fields)`"></span>
                 </div>
-                <p>Schema editor coming in Phase 1</p>
-                <p style="margin-top: 0.5rem; font-size: 0.8rem;">
-                  Header fields: <strong x-text="config.result?.header?.properties?.length || 0"></strong> &nbsp;·&nbsp;
-                  Detail fields: <strong x-text="config.result?.detail?.properties?.length || 0"></strong>
-                </p>
+                <table class="property-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Type</th>
+                      <th>Source</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="prop in headerProperties" :key="prop.name">
+                      <tr>
+                        <td class="prop-name" x-text="prop.name"></td>
+                        <td><span class="prop-type" x-text="prop.type"></span></td>
+                        <td>
+                          <span class="prop-source" :class="prop.source" x-text="prop.sourceLabel"></span>
+                        </td>
+                        <td>
+                          <span x-show="prop.prompt" class="prop-prompt" x-text="prop.prompt"></span>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Detail section -->
+              <div class="schema-section">
+                <div class="schema-section-header">
+                  <span class="schema-section-title">Detail Fields</span>
+                  <span class="schema-section-count" x-text="`(${detailProperties.length} fields)`"></span>
+                </div>
+                <table class="property-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Type</th>
+                      <th>Source</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="prop in detailProperties" :key="prop.name">
+                      <tr>
+                        <td class="prop-name" x-text="prop.name"></td>
+                        <td><span class="prop-type" x-text="prop.type"></span></td>
+                        <td>
+                          <span class="prop-source" :class="prop.source" x-text="prop.sourceLabel"></span>
+                        </td>
+                        <td>
+                          <span x-show="prop.prompt" class="prop-prompt" x-text="prop.prompt"></span>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -514,37 +827,128 @@
           <div class="card">
             <div class="card-header">
               <span class="card-title">Sources</span>
+              <span class="schema-section-count" x-text="`(${sourceCount} configured)`"></span>
             </div>
             <div class="card-body">
-              <div class="placeholder-content">
-                <div class="placeholder-icon">
-                  <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                  </svg>
-                </div>
-                <p>Sources gallery coming in Phase 1</p>
-                <p style="margin-top: 0.5rem; font-size: 0.8rem;">
-                  <strong x-text="sourceCount"></strong> sources configured
-                </p>
+              <div class="source-grid">
+                <template x-for="card in sourceCards" :key="card.name">
+                  <div class="source-card" @click="navigateTo('source-detail', card.name)">
+                    <!-- Logo or placeholder -->
+                    <template x-if="card.logo">
+                      <img class="source-card-logo" :src="card.logo" :alt="card.name">
+                    </template>
+                    <template x-if="!card.logo">
+                      <div class="source-card-logo-placeholder">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                      </div>
+                    </template>
+
+                    <div class="source-card-name" x-text="card.description || card.name"></div>
+                    <div class="source-card-id" x-text="card.name"></div>
+
+                    <!-- Status indicator -->
+                    <div class="source-card-status" :class="card.status">
+                      <template x-if="card.status === 'complete'">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                      </template>
+                      <template x-if="card.status === 'partial'">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                      </template>
+                      <template x-if="card.status === 'empty'">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                      </template>
+                      <span x-text="card.headerMappedCount + card.detailMappedCount + ' fields mapped'"></span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Empty state -->
+              <div x-show="sourceCards.length === 0" class="placeholder-content">
+                <p>No sources configured yet</p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Source detail view -->
-        <div x-show="currentView === 'source-detail'">
+        <div x-show="currentView === 'source-detail' && selectedSource">
           <div class="card">
-            <div class="card-header">
-              <span class="card-title" x-text="selectedSourceName"></span>
-            </div>
             <div class="card-body">
-              <div class="placeholder-content">
-                <div class="placeholder-icon">
-                  <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
+              <!-- Source header info -->
+              <div class="source-detail-header">
+                <template x-if="selectedSource.logo">
+                  <img class="source-detail-logo" :src="selectedSource.logo" :alt="selectedSource.name">
+                </template>
+                <div class="source-detail-info">
+                  <div class="source-detail-name" x-text="selectedSource.description || selectedSource.name"></div>
+                  <div class="source-detail-id" x-text="selectedSource.name"></div>
                 </div>
-                <p>Source mapping editor coming in Phase 2-3</p>
+                <button class="btn btn-secondary" @click="navigateTo('sources')">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                  </svg>
+                  Back
+                </button>
+              </div>
+
+              <!-- Header mappings -->
+              <div class="mapping-section">
+                <div class="mapping-section-title">Header Mappings</div>
+                <div class="mapping-list">
+                  <template x-for="mapping in selectedSource.header" :key="mapping.name">
+                    <div class="mapping-item">
+                      <span class="mapping-field" x-text="mapping.name"></span>
+                      <span class="mapping-arrow">←</span>
+                      <span class="mapping-locator" x-text="mapping.cell || mapping.range || mapping.value || '—'"></span>
+                    </div>
+                  </template>
+                  <div x-show="!selectedSource.header || selectedSource.header.length === 0" class="mapping-empty">
+                    No header mappings defined
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detail mappings -->
+              <div class="mapping-section">
+                <div class="mapping-section-title">
+                  Detail Mappings
+                  <span style="font-weight: normal; text-transform: none;" x-text="`(start row: ${selectedSource.detail?.startRow || '?'})`"></span>
+                </div>
+                <div class="mapping-list">
+                  <template x-for="mapping in selectedSource.detail?.properties || []" :key="mapping.name">
+                    <div class="mapping-item">
+                      <span class="mapping-field" x-text="mapping.name"></span>
+                      <span class="mapping-arrow">←</span>
+                      <span class="mapping-locator" x-text="mapping.column || mapping.value || '—'"></span>
+                    </div>
+                  </template>
+                  <div x-show="!selectedSource.detail?.properties || selectedSource.detail.properties.length === 0" class="mapping-empty">
+                    No detail mappings defined
+                  </div>
+                </div>
+              </div>
+
+              <!-- Default values -->
+              <div class="mapping-section" x-show="selectedSource.defaultValues && Object.keys(selectedSource.defaultValues).length > 0">
+                <div class="mapping-section-title">Default Values</div>
+                <div class="mapping-list">
+                  <template x-for="[key, value] in Object.entries(selectedSource.defaultValues || {})" :key="key">
+                    <div class="mapping-item">
+                      <span class="mapping-field" x-text="key"></span>
+                      <span class="mapping-arrow">=</span>
+                      <span class="mapping-locator" x-text="value"></span>
+                    </div>
+                  </template>
+                </div>
               </div>
             </div>
           </div>
