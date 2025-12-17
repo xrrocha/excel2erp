@@ -65,6 +65,11 @@
       grid-template-columns: var(--sidebar-width) 1fr;
       grid-template-rows: var(--header-height) 1fr;
       min-height: 100vh;
+      transition: grid-template-columns 0.2s ease;
+    }
+
+    .app-layout.sidebar-collapsed {
+      grid-template-columns: 0 1fr;
     }
 
     /* ===== Header ===== */
@@ -76,6 +81,30 @@
       display: flex;
       align-items: center;
       gap: var(--space-md);
+    }
+
+    .hamburger-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: none;
+      color: var(--gray-500);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+
+    .hamburger-btn:hover {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .hamburger-btn svg {
+      width: 20px;
+      height: 20px;
     }
 
     .header-title {
@@ -104,6 +133,14 @@
       display: flex;
       flex-direction: column;
       gap: var(--space-xs);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-collapsed .sidebar {
+      padding: 0;
+      width: 0;
+      border-right: none;
     }
 
     .nav-item {
@@ -590,15 +627,34 @@
       font-family: ui-monospace, monospace;
     }
 
+    .mappings-container {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    .mappings-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-sm);
+    }
+
+    .mappings-row:last-child {
+      margin-bottom: 0;
+    }
+
     .mapping-section {
-      margin-bottom: var(--space-lg);
+      margin-bottom: 0;
     }
 
     .mapping-section-title {
-      font-size: 0.8125rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--gray-600);
-      margin-bottom: var(--space-sm);
+      margin-bottom: var(--space-xs);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -637,6 +693,238 @@
       color: var(--gray-400);
       font-style: italic;
       font-size: 0.8125rem;
+    }
+
+    /* ===== Excel Viewer ===== */
+    .excel-section {
+      margin-top: var(--space-lg);
+      padding-top: var(--space-lg);
+      border-top: 2px solid var(--gray-200);
+    }
+
+    .excel-section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    .excel-section-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .excel-filename {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      font-family: ui-monospace, monospace;
+      background: var(--gray-100);
+      padding: 0.125rem 0.5rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .excel-picker {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-sm);
+      border: 1px dashed var(--gray-300);
+      border-radius: var(--radius-sm);
+      background: white;
+      cursor: pointer;
+      font-size: 0.8125rem;
+      color: var(--gray-600);
+      transition: all 0.15s;
+    }
+
+    .excel-picker:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .excel-picker input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .excel-picker svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Sheet tabs */
+    .sheet-tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--gray-200);
+      padding-bottom: 2px;
+    }
+
+    .sheet-tab {
+      padding: var(--space-xs) var(--space-md);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      background: var(--gray-100);
+      border: none;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      cursor: pointer;
+      transition: all 0.15s;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sheet-tab:hover {
+      background: var(--gray-200);
+      color: var(--gray-700);
+    }
+
+    .sheet-tab.active {
+      background: white;
+      color: var(--primary);
+      border: 1px solid var(--gray-200);
+      border-bottom-color: white;
+      margin-bottom: -1px;
+    }
+
+    /* Excel grid */
+    .excel-grid-container {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+    }
+
+    .excel-grid {
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      font-family: ui-monospace, monospace;
+    }
+
+    .excel-grid th,
+    .excel-grid td {
+      border: 1px solid var(--gray-200);
+      padding: 0.25rem 0.5rem;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .excel-grid th {
+      background: var(--gray-100);
+      color: var(--gray-600);
+      font-weight: 600;
+      text-align: center;
+      position: sticky;
+      top: 0;
+    }
+
+    .excel-grid .row-header {
+      background: var(--gray-100);
+      color: var(--gray-500);
+      text-align: center;
+      width: 40px;
+      min-width: 40px;
+    }
+
+    .excel-grid .corner-cell {
+      background: var(--gray-100);
+      width: 40px;
+      min-width: 40px;
+    }
+
+    .excel-grid td {
+      background: white;
+      color: var(--gray-700);
+    }
+
+    /* Hover highlighting (prep for Phase 3) */
+    .excel-grid tr:hover td:not(.row-header) {
+      background: var(--gray-50);
+    }
+
+    .excel-grid td:hover:not(.row-header) {
+      background: var(--primary-light) !important;
+      cursor: pointer;
+    }
+
+    .excel-grid th.col-hover {
+      background: var(--primary-light);
+    }
+
+    /* Scroll controls */
+    .excel-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-sm);
+      background: var(--gray-50);
+      border-top: 1px solid var(--gray-200);
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+
+    .excel-scroll-controls {
+      display: flex;
+      gap: var(--space-xs);
+    }
+
+    .excel-scroll-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      background: white;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .excel-scroll-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .excel-scroll-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .excel-scroll-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Empty state */
+    .excel-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-xl);
+      color: var(--gray-400);
+      text-align: center;
+    }
+
+    .excel-empty svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: var(--space-md);
+    }
+
+    .excel-empty-text {
+      font-size: 0.875rem;
+      margin-bottom: var(--space-md);
     }
   </style>
 </head>
@@ -682,9 +970,14 @@
 
   <!-- Main editor (shown when config is loaded) -->
   <template x-if="config">
-    <div class="app-layout">
+    <div class="app-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
       <!-- Header -->
       <div class="header">
+        <button class="hamburger-btn" @click="toggleSidebar()" :title="sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
         <span class="header-title" x-text="config.name || 'Untitled'"></span>
         <span class="header-subtitle" x-text="configFileName"></span>
         <div x-show="dirty" class="dirty-indicator" title="Unsaved changes"></div>
@@ -892,6 +1185,16 @@
                   <div class="source-detail-name" x-text="selectedSource.description || selectedSource.name"></div>
                   <div class="source-detail-id" x-text="selectedSource.name"></div>
                 </div>
+
+                <!-- Excel picker -->
+                <label class="excel-picker">
+                  <input type="file" accept=".xls,.xlsx,.xlsm" @change="loadExcel($event.target.files[0])">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  <span x-text="excelFileName || 'Load Sample Excel'"></span>
+                </label>
+
                 <button class="btn btn-secondary" @click="navigateTo('sources')">
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -900,54 +1203,151 @@
                 </button>
               </div>
 
-              <!-- Header mappings -->
-              <div class="mapping-section">
-                <div class="mapping-section-title">Header Mappings</div>
-                <div class="mapping-list">
-                  <template x-for="mapping in selectedSource.header" :key="mapping.name">
-                    <div class="mapping-item">
-                      <span class="mapping-field" x-text="mapping.name"></span>
-                      <span class="mapping-arrow">←</span>
-                      <span class="mapping-locator" x-text="mapping.cell || mapping.range || mapping.value || '—'"></span>
+              <!-- Mappings container -->
+              <div class="mappings-container">
+                <!-- Header and Detail mappings side-by-side -->
+                <div class="mappings-row">
+                  <!-- Header mappings -->
+                  <div class="mapping-section">
+                    <div class="mapping-section-title">Header Mappings</div>
+                    <div class="mapping-list">
+                      <template x-for="mapping in selectedSource.header" :key="mapping.name">
+                        <div class="mapping-item">
+                          <span class="mapping-field" x-text="mapping.name"></span>
+                          <span class="mapping-arrow">←</span>
+                          <span class="mapping-locator" x-text="mapping.cell || mapping.range || mapping.value || '—'"></span>
+                        </div>
+                      </template>
+                      <div x-show="!selectedSource.header || selectedSource.header.length === 0" class="mapping-empty">
+                        No header mappings
+                      </div>
                     </div>
-                  </template>
-                  <div x-show="!selectedSource.header || selectedSource.header.length === 0" class="mapping-empty">
-                    No header mappings defined
+                  </div>
+
+                  <!-- Detail mappings -->
+                  <div class="mapping-section">
+                    <div class="mapping-section-title">
+                      Detail Mappings
+                      <span style="font-weight: normal; text-transform: none;" x-text="`(row ${selectedSource.detail?.startRow || '?'})`"></span>
+                    </div>
+                    <div class="mapping-list">
+                      <template x-for="mapping in selectedSource.detail?.properties || []" :key="mapping.name">
+                        <div class="mapping-item">
+                          <span class="mapping-field" x-text="mapping.name"></span>
+                          <span class="mapping-arrow">←</span>
+                          <span class="mapping-locator" x-text="mapping.column || mapping.value || '—'"></span>
+                        </div>
+                      </template>
+                      <div x-show="!selectedSource.detail?.properties || selectedSource.detail.properties.length === 0" class="mapping-empty">
+                        No detail mappings
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Default values (inline, compact) -->
+                <div class="mappings-row" x-show="selectedSource.defaultValues && Object.keys(selectedSource.defaultValues).length > 0">
+                  <div class="mapping-section" style="grid-column: 1 / -1;">
+                    <div class="mapping-section-title">Default Values</div>
+                    <div class="mapping-list" style="flex-direction: row; flex-wrap: wrap; gap: var(--space-xs);">
+                      <template x-for="[key, value] in Object.entries(selectedSource.defaultValues || {})" :key="key">
+                        <div class="mapping-item" style="flex: 0 0 auto;">
+                          <span class="mapping-field" x-text="key"></span>
+                          <span class="mapping-arrow">=</span>
+                          <span class="mapping-locator" x-text="value"></span>
+                        </div>
+                      </template>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Detail mappings -->
-              <div class="mapping-section">
-                <div class="mapping-section-title">
-                  Detail Mappings
-                  <span style="font-weight: normal; text-transform: none;" x-text="`(start row: ${selectedSource.detail?.startRow || '?'})`"></span>
+              <!-- Excel Viewer Section -->
+              <div class="excel-section">
+                <div class="excel-section-header">
+                  <span class="excel-section-title">Sample Excel</span>
+                  <span x-show="excelFileName" class="excel-filename" x-text="excelFileName"></span>
                 </div>
-                <div class="mapping-list">
-                  <template x-for="mapping in selectedSource.detail?.properties || []" :key="mapping.name">
-                    <div class="mapping-item">
-                      <span class="mapping-field" x-text="mapping.name"></span>
-                      <span class="mapping-arrow">←</span>
-                      <span class="mapping-locator" x-text="mapping.column || mapping.value || '—'"></span>
-                    </div>
-                  </template>
-                  <div x-show="!selectedSource.detail?.properties || selectedSource.detail.properties.length === 0" class="mapping-empty">
-                    No detail mappings defined
-                  </div>
-                </div>
-              </div>
 
-              <!-- Default values -->
-              <div class="mapping-section" x-show="selectedSource.defaultValues && Object.keys(selectedSource.defaultValues).length > 0">
-                <div class="mapping-section-title">Default Values</div>
-                <div class="mapping-list">
-                  <template x-for="[key, value] in Object.entries(selectedSource.defaultValues || {})" :key="key">
-                    <div class="mapping-item">
-                      <span class="mapping-field" x-text="key"></span>
-                      <span class="mapping-arrow">=</span>
-                      <span class="mapping-locator" x-text="value"></span>
+                <!-- Empty state: no Excel loaded -->
+                <div x-show="!workbook" class="excel-empty">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  <p class="excel-empty-text">Load a sample Excel file to preview data and configure mappings</p>
+                </div>
+
+                <!-- Excel viewer: sheet tabs + grid -->
+                <div x-show="workbook">
+                  <!-- Sheet tabs -->
+                  <div class="sheet-tabs">
+                    <template x-for="(name, index) in sheetNames" :key="index">
+                      <button
+                        class="sheet-tab"
+                        :class="{ active: selectedSheetIndex === index }"
+                        @click="selectSheet(index)"
+                        x-text="name"
+                        :title="name"
+                      ></button>
+                    </template>
+                  </div>
+
+                  <!-- Grid container -->
+                  <div class="excel-grid-container">
+                    <table class="excel-grid">
+                      <!-- Header row with column letters -->
+                      <thead>
+                        <tr>
+                          <th class="corner-cell"></th>
+                          <template x-for="(letter, colIndex) in columnLetters" :key="letter">
+                            <th x-text="letter" :style="{ width: columnWidths[colIndex] + 'px', minWidth: columnWidths[colIndex] + 'px' }"></th>
+                          </template>
+                        </tr>
+                      </thead>
+                      <!-- Data rows -->
+                      <tbody>
+                        <template x-for="(row, rowIndex) in visibleSheetData" :key="rowIndex">
+                          <tr>
+                            <td class="row-header" x-text="visibleStartRow + rowIndex + 1"></td>
+                            <template x-for="(cell, colIndex) in row" :key="colIndex">
+                              <td x-text="cell" :title="cell"></td>
+                            </template>
+                            <!-- Fill empty cells if row is shorter than max columns -->
+                            <template x-for="i in Math.max(0, totalCols - row.length)" :key="'empty-' + i">
+                              <td></td>
+                            </template>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+
+                    <!-- Footer with row info and scroll controls -->
+                    <div class="excel-footer">
+                      <span x-text="`Showing rows ${visibleStartRow + 1}-${visibleEndRow} of ${totalRows}`"></span>
+                      <div class="excel-scroll-controls">
+                        <button
+                          class="excel-scroll-btn"
+                          @click="scrollExcel('up')"
+                          :disabled="visibleStartRow === 0"
+                          title="Previous rows"
+                        >
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                          </svg>
+                        </button>
+                        <button
+                          class="excel-scroll-btn"
+                          @click="scrollExcel('down')"
+                          :disabled="visibleEndRow >= totalRows"
+                          title="Next rows"
+                        >
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                  </template>
+                  </div>
                 </div>
               </div>
             </div>

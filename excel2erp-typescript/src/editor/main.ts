@@ -1,6 +1,7 @@
 import Alpine from 'alpinejs';
 import type { AppConfig, SourceConfig, ResultProperty } from '../shared/config/types';
 import { parseYamlConfig } from '../shared/config/loader';
+import { ExcelReader, colToLetter } from '../shared/excel/reader';
 
 /**
  * Editor navigation views
@@ -37,6 +38,20 @@ interface SourceCardInfo {
 }
 
 /**
+ * Cell value type for Excel grid display
+ */
+type CellValue = string | number;
+
+/**
+ * Excel viewer constants
+ */
+const EXCEL_VISIBLE_ROWS = 15;
+const EXCEL_MAX_DISPLAY_ROWS = 50;
+const COLUMN_MIN_WIDTH = 60;
+const COLUMN_MAX_WIDTH = 200;
+const COLUMN_CHAR_WIDTH = 8;
+
+/**
  * Editor application state
  */
 interface EditorState {
@@ -49,9 +64,26 @@ interface EditorState {
   configFileName: string | null;
   dirty: boolean;
 
+  // Excel viewer state
+  excelFile: File | null;
+  excelFileName: string;
+  workbook: ExcelReader | null;
+  sheetNames: string[];
+  selectedSheetIndex: number;
+  sheetData: CellValue[][];
+  totalRows: number;
+  totalCols: number;
+  visibleStartRow: number;
+  columnWidths: number[];
+
+  // Hover state (for Phase 3 click-to-assign)
+  hoveredRow: number | null;
+  hoveredCol: number | null;
+
   // UI state
   loading: boolean;
   error: string | null;
+  sidebarCollapsed: boolean;
 
   // Computed
   get canSave(): boolean;
@@ -60,11 +92,19 @@ interface EditorState {
   get detailProperties(): PropertyInfo[];
   get sourceCards(): SourceCardInfo[];
   get selectedSource(): SourceConfig | null;
+  get visibleRows(): number;
+  get visibleEndRow(): number;
+  get columnLetters(): string[];
+  get visibleSheetData(): CellValue[][];
 
   // Methods
   init(): Promise<void>;
   loadConfig(file: File): Promise<void>;
+  loadExcel(file: File): Promise<void>;
+  selectSheet(index: number): void;
+  scrollExcel(direction: 'up' | 'down'): void;
   navigateTo(view: EditorView, sourceName?: string): void;
+  toggleSidebar(): void;
   markDirty(): void;
   getValueSource(prop: ResultProperty, section: 'header' | 'detail'): { source: ValueSource; label: string };
 }
@@ -132,9 +172,26 @@ function createEditorApp(): EditorState {
     configFileName: null,
     dirty: false,
 
+    // Excel viewer state
+    excelFile: null,
+    excelFileName: '',
+    workbook: null,
+    sheetNames: [],
+    selectedSheetIndex: 0,
+    sheetData: [],
+    totalRows: 0,
+    totalCols: 0,
+    visibleStartRow: 0,
+    columnWidths: [],
+
+    // Hover state (for Phase 3)
+    hoveredRow: null,
+    hoveredCol: null,
+
     // UI state
     loading: false,
     error: null,
+    sidebarCollapsed: false,
 
     // Computed
     get canSave(): boolean {
@@ -223,6 +280,22 @@ function createEditorApp(): EditorState {
       return this.config.sources.find((s) => s.name === this.selectedSourceName) ?? null;
     },
 
+    get visibleRows(): number {
+      return Math.min(EXCEL_VISIBLE_ROWS, this.totalRows - this.visibleStartRow);
+    },
+
+    get visibleEndRow(): number {
+      return Math.min(this.visibleStartRow + EXCEL_VISIBLE_ROWS, this.totalRows);
+    },
+
+    get columnLetters(): string[] {
+      return Array.from({ length: this.totalCols }, (_, i) => colToLetter(i));
+    },
+
+    get visibleSheetData(): CellValue[][] {
+      return this.sheetData.slice(this.visibleStartRow, this.visibleEndRow);
+    },
+
     // Methods
     async init(): Promise<void> {
       console.log('Config Editor initialized');
@@ -248,9 +321,114 @@ function createEditorApp(): EditorState {
       }
     },
 
+    async loadExcel(file: File): Promise<void> {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const buffer = await file.arrayBuffer();
+        this.workbook = new ExcelReader(buffer);
+        this.excelFile = file;
+        this.excelFileName = file.name;
+        this.sheetNames = this.workbook.sheetNames;
+        this.selectedSheetIndex = 0;
+        this.selectSheet(0);
+        this.sidebarCollapsed = true;
+        console.log('Excel loaded:', file.name, `(${this.sheetNames.length} sheets)`);
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to parse Excel file';
+        this.workbook = null;
+        this.excelFile = null;
+        this.excelFileName = '';
+        this.sheetNames = [];
+        this.sheetData = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    selectSheet(index: number): void {
+      if (!this.workbook || index < 0 || index >= this.sheetNames.length) return;
+
+      this.selectedSheetIndex = index;
+      const sheet = this.workbook.getSheet(index);
+
+      // Extract sheet data as 2D array (limit to EXCEL_MAX_DISPLAY_ROWS)
+      const data: CellValue[][] = [];
+      let maxCol = 0;
+
+      // Scan to find used range (up to max rows)
+      for (let row = 0; row < EXCEL_MAX_DISPLAY_ROWS; row++) {
+        const rowData: CellValue[] = [];
+        let hasData = false;
+
+        // Scan columns (up to reasonable limit)
+        for (let col = 0; col < 26; col++) {
+          const value = sheet.readCellByIndex(row, col);
+          rowData.push(value);
+          if (value !== '') {
+            hasData = true;
+            maxCol = Math.max(maxCol, col);
+          }
+        }
+
+        if (!hasData && row > 0) {
+          // Stop at first completely empty row
+          break;
+        }
+
+        data.push(rowData.slice(0, maxCol + 1));
+      }
+
+      this.sheetData = data;
+      this.totalRows = data.length;
+      this.totalCols = maxCol + 1;
+      this.visibleStartRow = 0;
+
+      // Calculate column widths based on content
+      const widths: number[] = [];
+      for (let col = 0; col <= maxCol; col++) {
+        let maxLen = 2; // Minimum for column letter (A, B, etc.)
+        for (const row of data) {
+          if (col < row.length) {
+            const cellLen = String(row[col]).length;
+            maxLen = Math.max(maxLen, cellLen);
+          }
+        }
+        const width = Math.min(COLUMN_MAX_WIDTH, Math.max(COLUMN_MIN_WIDTH, maxLen * COLUMN_CHAR_WIDTH));
+        widths.push(width);
+      }
+      this.columnWidths = widths;
+    },
+
+    scrollExcel(direction: 'up' | 'down'): void {
+      const maxStart = Math.max(0, this.totalRows - EXCEL_VISIBLE_ROWS);
+
+      if (direction === 'up') {
+        this.visibleStartRow = Math.max(0, this.visibleStartRow - EXCEL_VISIBLE_ROWS);
+      } else {
+        this.visibleStartRow = Math.min(maxStart, this.visibleStartRow + EXCEL_VISIBLE_ROWS);
+      }
+    },
+
     navigateTo(view: EditorView, sourceName?: string): void {
+      // Clear Excel state when leaving source-detail view
+      if (this.currentView === 'source-detail' && view !== 'source-detail') {
+        this.workbook = null;
+        this.excelFile = null;
+        this.excelFileName = '';
+        this.sheetNames = [];
+        this.sheetData = [];
+        this.totalRows = 0;
+        this.totalCols = 0;
+      }
+
       this.currentView = view;
       this.selectedSourceName = sourceName ?? null;
+    },
+
+    toggleSidebar(): void {
+      this.sidebarCollapsed = !this.sidebarCollapsed;
     },
 
     markDirty(): void {
