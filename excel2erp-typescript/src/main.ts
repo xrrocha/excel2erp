@@ -6,8 +6,8 @@
  */
 
 import Alpine from 'alpinejs';
-import { parseYamlConfig, getSourceConfig } from './config/loader';
-import { deriveRuntimeSources, type AppConfig, type RuntimeSource } from './config/types';
+import { parseYamlConfig, getSourceConfig, deriveRuntimeSources } from './config/loader';
+import type { AppConfig, RuntimeSource } from './config/types';
 import { getEmbeddedConfig, isEmbeddedBuild } from './config/embedded';
 import { resolveLogo } from './config/logos';
 import { processExcel } from './extraction/engine';
@@ -92,6 +92,7 @@ Alpine.data('app', (): AppState => ({
 
   get canSubmit(): boolean {
     if (!this.selectedSource || !this.file || this.processing) return false;
+    if (this.error) return false;  // Don't allow submit when there are errors
     // Check all required fields are filled
     for (const field of this.dynamicFields) {
       if (!this.formData[field.name]) return false;
@@ -406,8 +407,16 @@ Alpine.data('app', (): AppState => ({
       this.successMessage = successTemplate.replace('${filename}', this.preview.zipFilename);
       console.log(`Generated: ${this.preview.zipFilename}`);
 
-      // Clear preview after download
+      // Clear form for next file (keep source selection and success message)
       this.preview = null;
+      this.file = null;
+      for (const field of this.dynamicFields) {
+        this.formData[field.name] = '';
+      }
+
+      // Reset file input element
+      const fileInput = document.querySelector('input[type="file"][accept*=".xls"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     } catch (err) {
       this.formatError(err);
       console.error('Download error:', err);

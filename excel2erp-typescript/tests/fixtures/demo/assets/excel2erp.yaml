@@ -107,7 +107,7 @@ config:
         locator: A7
         properties:
           - name: ItemCode
-            locator: CÓDIGO
+            locator: CODIGO
           - name: Quantity
             locator: CANTIDAD
   result:

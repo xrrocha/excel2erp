@@ -234,7 +234,7 @@ export function validateDetailTable(
   // Check which expected columns are missing
   const missingColumns = expectedColumns.filter(col => !foundHeaders.includes(col));
   if (missingColumns.length > 0) {
-    warnings.push({
+    errors.push({
       field: 'columns',
       message: `Expected column(s) not found: ${missingColumns.join(', ')}. Found: ${foundHeaders.join(', ')}`,
       value: missingColumns.join(', '),

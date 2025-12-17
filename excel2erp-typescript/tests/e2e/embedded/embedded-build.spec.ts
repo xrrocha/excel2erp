@@ -1,9 +1,9 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { ui } from '../../helpers/e2e-ui.ts';
+import { getDirname } from '../../helpers/paths.ts';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = getDirname(import.meta.url);
 
 /**
  * Embedded Build Tests
@@ -26,35 +26,6 @@ const __dirname = path.dirname(__filename);
 test.use({
   baseURL: 'http://localhost:5174', // Different port for embedded test server
 });
-
-/**
- * UI abstraction (consistent with other e2e tests)
- */
-const ui = {
-  async selectSource(page: Page, sourceName: string) {
-    const select = page.locator('select[name="source"], select');
-    await expect(select).toBeVisible({ timeout: 10000 });
-    await select.selectOption(sourceName);
-    await page.waitForTimeout(500);
-  },
-
-  async uploadFile(page: Page, filePath: string) {
-    const fileInput = page.locator('input[type="file"][accept*=".xls"]');
-    await expect(fileInput).toBeAttached({ timeout: 5000 });
-    await fileInput.setInputFiles(filePath);
-  },
-
-  async waitForPreview(page: Page) {
-    const previewCard = page.locator('.preview-card');
-    await expect(previewCard).toBeVisible({ timeout: 5000 });
-  },
-
-  async confirmDownload(page: Page) {
-    const downloadBtn = page.locator('.btn-confirm');
-    await expect(downloadBtn).toBeVisible({ timeout: 5000 });
-    await downloadBtn.click();
-  },
-};
 
 test.describe('Embedded Build', () => {
 

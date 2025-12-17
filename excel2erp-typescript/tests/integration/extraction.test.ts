@@ -1,25 +1,24 @@
 /**
  * Integration tests for extraction engine using real YAML config and Excel fixtures.
  *
- * These tests use the actual wb-server.yaml configuration and private Excel files
+ * These tests use the demo excel2erp.yaml configuration and demo Excel files
  * to verify extraction produces the expected output.
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { parseYamlConfig, getSourceConfig } from '../../src/config/loader';
 import { extractFromExcel, processExcel } from '../../src/extraction/engine';
-import { FIXED_USER_INPUTS, TEST_SOURCES } from '../fixtures/user-inputs';
+import { DEMO_USER_INPUTS, DEMO_SOURCES } from '../fixtures/demo-inputs';
+import { getDirname } from '../helpers/paths';
 import type { AppConfig } from '../../src/config/types';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = getDirname(import.meta.url);
 
-// Paths - all fixtures under tests/fixtures/legacy/
-const YAML_CONFIG_PATH = path.join(__dirname, '../fixtures/legacy/wb-server.yaml');
-const EXCEL_FIXTURES_PATH = path.join(__dirname, '../fixtures/legacy/excel');
+// Paths — tests/fixtures/demo/
+const YAML_CONFIG_PATH = path.join(__dirname, '../fixtures/demo/assets/excel2erp.yaml');
+const EXCEL_FIXTURES_PATH = path.join(__dirname, '../fixtures/demo/excel');
 
 let config: AppConfig;
 
@@ -29,7 +28,7 @@ beforeAll(() => {
 });
 
 describe('YAML Config Loading', () => {
-  it('loads wb-server.yaml successfully', () => {
+  it('loads demo config successfully', () => {
     expect(config).toBeDefined();
     expect(config.name).toBe('pedidos');
     expect(config.sources).toHaveLength(5);
@@ -37,43 +36,45 @@ describe('YAML Config Loading', () => {
 
   it('parses all sources', () => {
     const sourceNames = config.sources.map(s => s.name);
-    expect(sourceNames).toContain('coral');
-    expect(sourceNames).toContain('rosado');
-    expect(sourceNames).toContain('santamaria');
-    expect(sourceNames).toContain('supermaxi');
-    expect(sourceNames).toContain('tia');
+    expect(sourceNames).toContain('el-dorado');
+    expect(sourceNames).toContain('cascabel');
+    expect(sourceNames).toContain('la-nanita');
+    expect(sourceNames).toContain('la-pinta');
+    expect(sourceNames).toContain('uber-gross');
   });
 
   it('parses source header properties', () => {
-    const coral = getSourceConfig(config, 'coral')!;
-    expect(coral.header).toHaveLength(2);
-    expect(coral.header[0].name).toBe('NumAtCard');
-    expect(coral.header[0].locator).toBe('B3');
+    const elDorado = getSourceConfig(config, 'el-dorado')!;
+    expect(elDorado.header).toHaveLength(2);
+    expect(elDorado.header[0].name).toBe('NumAtCard');
+    expect(elDorado.header[0].locator).toBe('E2');
   });
 
   it('parses source detail properties', () => {
-    const coral = getSourceConfig(config, 'coral')!;
-    expect(coral.detail.locator).toBe('A12');
-    expect(coral.detail.properties).toHaveLength(2);
-    expect(coral.detail.properties[0].name).toBe('ItemCode');
-    expect(coral.detail.properties[0].locator).toBe('BARRA');
+    const elDorado = getSourceConfig(config, 'el-dorado')!;
+    expect(elDorado.detail.locator).toBe('A8');
+    expect(elDorado.detail.properties).toHaveLength(2);
+    expect(elDorado.detail.properties[0].name).toBe('ItemCode');
+    expect(elDorado.detail.properties[0].locator).toBe('Cod.');
   });
 
   it('parses replacements', () => {
-    const coral = getSourceConfig(config, 'coral')!;
-    const docDate = coral.header.find(h => h.name === 'DocDate');
+    const cascabel = getSourceConfig(config, 'cascabel')!;
+    const docDate = cascabel.header.find(h => h.name === 'DocDate');
     expect(docDate?.replacements).toEqual({ '-': '' });
 
-    const itemCode = coral.detail.properties.find(p => p.name === 'ItemCode');
+    const elDorado = getSourceConfig(config, 'el-dorado')!;
+    const itemCode = elDorado.detail.properties.find(p => p.name === 'ItemCode');
+    // YAML parses numeric keys/values as numbers
     expect(itemCode?.replacements).toEqual({
-      '68077': 'PTQCH068077',
-      '68074': 'PTQH068074',
+      '77086': 701987570207,
+      '47086': 707271908503,
     });
   });
 
   it('parses result config', () => {
     expect(config.result.separator).toBe('\t');
-    expect(config.result.baseName).toBe('sap-pedido-${sourceName}-${NumAtCard}');
+    expect(config.result.baseName).toBe('erp-pedido-${sourceName}-${NumAtCard}');
     expect(config.result.header.filename).toBe('cabecera.txt');
     expect(config.result.detail.filename).toBe('detalle.txt');
   });
@@ -88,7 +89,7 @@ describe('YAML Config Loading', () => {
 });
 
 describe('Excel Extraction', () => {
-  for (const { name: sourceName, file: excelFile } of TEST_SOURCES) {
+  for (const { name: sourceName, file: excelFile } of DEMO_SOURCES) {
     describe(`Source: ${sourceName}`, () => {
       const excelPath = path.join(EXCEL_FIXTURES_PATH, excelFile);
 
@@ -107,8 +108,6 @@ describe('Excel Extraction', () => {
         expect(extracted.detail.length).toBeGreaterThan(0);
 
         // All detail rows should have Quantity at minimum
-        // Note: Some fixtures may have mismatched column names (e.g., TIA's "BARRAS" vs "PROVEEDOR COD.BARRAS")
-        // which results in missing ItemCode. This mirrors Kotlin behavior.
         for (const row of extracted.detail) {
           expect(row).toHaveProperty('Quantity');
         }
@@ -123,7 +122,7 @@ describe('Excel Extraction', () => {
         );
 
         // Get fixed user inputs for this source
-        const userInput = FIXED_USER_INPUTS[sourceName] ?? {};
+        const userInput = DEMO_USER_INPUTS[sourceName] ?? {};
 
         const result = processExcel(
           arrayBuffer,
@@ -135,7 +134,7 @@ describe('Excel Extraction', () => {
         expect(result.success).toBe(true);
         expect(result.headerContent).toBeDefined();
         expect(result.detailContent).toBeDefined();
-        expect(result.zipFilename).toMatch(/^sap-pedido-/);
+        expect(result.zipFilename).toMatch(/^erp-pedido-/);
         expect(result.zipFilename).toMatch(/\.zip$/);
 
         // Header should have prolog + data line
@@ -149,16 +148,16 @@ describe('Excel Extraction', () => {
 });
 
 describe('Replacement Application', () => {
-  it('applies date replacements (coral: removes dashes)', () => {
-    const coral = getSourceConfig(config, 'coral')!;
-    const excelPath = path.join(EXCEL_FIXTURES_PATH, 'pedido-coral.xls'); // Note: .xls not .xlsx
+  it('applies date replacements (cascabel: removes dashes)', () => {
+    const cascabel = getSourceConfig(config, 'cascabel')!;
+    const excelPath = path.join(EXCEL_FIXTURES_PATH, 'cascabel.xlsx');
     const excelData = fs.readFileSync(excelPath);
     const arrayBuffer = excelData.buffer.slice(
       excelData.byteOffset,
       excelData.byteOffset + excelData.byteLength
     );
 
-    const extracted = extractFromExcel(arrayBuffer, coral);
+    const extracted = extractFromExcel(arrayBuffer, cascabel);
 
     // DocDate should have dashes removed
     const docDate = extracted.header.DocDate;
@@ -166,23 +165,22 @@ describe('Replacement Application', () => {
     expect(docDate).toMatch(/^\d{8}$/); // YYYYMMDD format
   });
 
-  it('applies item code replacements (coral: specific codes)', () => {
-    const coral = getSourceConfig(config, 'coral')!;
-    const excelPath = path.join(EXCEL_FIXTURES_PATH, 'pedido-coral.xls'); // Note: .xls not .xlsx
+  it('applies item code replacements (el-dorado: specific codes)', () => {
+    const elDorado = getSourceConfig(config, 'el-dorado')!;
+    const excelPath = path.join(EXCEL_FIXTURES_PATH, 'el-dorado.xlsx');
     const excelData = fs.readFileSync(excelPath);
     const arrayBuffer = excelData.buffer.slice(
       excelData.byteOffset,
       excelData.byteOffset + excelData.byteLength
     );
 
-    const extracted = extractFromExcel(arrayBuffer, coral);
+    const extracted = extractFromExcel(arrayBuffer, elDorado);
 
     // Check if any item codes were replaced
     const itemCodes = extracted.detail.map(row => row.ItemCode);
 
-    // If the file contains 68077, it should be replaced with PTQCH068077
-    // If the file contains 68074, it should be replaced with PTQH068074
-    // (We can't know for sure without looking at the file, but replacements should be applied)
+    // If the file contains 77086, it should be replaced with 701987570207
+    // If the file contains 47086, it should be replaced with 707271908503
     expect(itemCodes.length).toBeGreaterThan(0);
   });
 });

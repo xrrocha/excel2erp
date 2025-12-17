@@ -8,7 +8,7 @@
  */
 
 import YAML from 'yaml';
-import type { AppConfig, SourceConfig, ResultConfig, SourceProperty, DetailConfig, FileSpec, ResultProperty } from './types';
+import type { AppConfig, SourceConfig, ResultConfig, SourceProperty, DetailConfig, FileSpec, ResultProperty, RuntimeSource, UserInputField } from './types';
 
 /**
  * Raw YAML structure as read from configuration file.
@@ -215,4 +215,41 @@ function transformResultProperty(raw: RawResultProperty): ResultProperty {
  */
 export function getSourceConfig(config: AppConfig, sourceName: string): SourceConfig | undefined {
   return config.sources.find(s => s.name === sourceName);
+}
+
+/**
+ * Derive runtime sources from full config.
+ * Computes which fields need user input based on what's extracted vs defaulted.
+ */
+export function deriveRuntimeSources(config: AppConfig): RuntimeSource[] {
+  const resultHeaderProps = config.result.header.properties;
+
+  return config.sources.map(source => {
+    // Find properties that need user input:
+    // 1. Defined in result header
+    // 2. Not extracted from Excel (not in source.header)
+    // 3. No defaultValue in result or source.defaultValues
+    const extractedNames = new Set(source.header.map(h => h.name));
+    const defaultedNames = new Set([
+      ...Object.keys(source.defaultValues),
+      ...resultHeaderProps.filter(p => p.defaultValue !== undefined).map(p => p.name),
+    ]);
+
+    const userInputFields: UserInputField[] = resultHeaderProps
+      .filter(prop => {
+        // Not extracted and not defaulted = needs user input
+        return !extractedNames.has(prop.name) && !defaultedNames.has(prop.name);
+      })
+      .map(prop => ({
+        name: prop.name,
+        type: prop.type ?? 'text',
+        prompt: prop.prompt ?? prop.name,
+      }));
+
+    return {
+      name: source.name,
+      description: source.description,
+      userInputFields,
+    };
+  });
 }

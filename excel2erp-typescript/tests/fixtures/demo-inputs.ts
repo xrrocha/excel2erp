@@ -1,3 +1,5 @@
+import type { UserInputs, FilenamePatterns, TestSource } from './types';
+
 /**
  * Demo Test Fixtures
  *
@@ -13,7 +15,7 @@
  *
  * Note: CardCode has defaultValue per source, so not needed from user.
  */
-export const DEMO_USER_INPUTS: Record<string, Record<string, string>> = {
+export const DEMO_USER_INPUTS: UserInputs = {
   'el-dorado': {
     DocDueDate: '20240215',
   },
@@ -38,7 +40,7 @@ export const DEMO_USER_INPUTS: Record<string, Record<string, string>> = {
  * Filename patterns for demo sources.
  * Format: erp-pedido-${sourceName}-${NumAtCard}.zip
  */
-export const DEMO_FILENAME_PATTERNS: Record<string, RegExp> = {
+export const DEMO_FILENAME_PATTERNS: FilenamePatterns = {
   'el-dorado': /^erp-pedido-el-dorado-.+\.zip$/,
   'cascabel': /^erp-pedido-cascabel-.+\.zip$/,
   'la-nanita': /^erp-pedido-la-nanita-DEMO-LN-001\.zip$/,
@@ -49,10 +51,10 @@ export const DEMO_FILENAME_PATTERNS: Record<string, RegExp> = {
 /**
  * Demo source metadata for contract tests.
  */
-export const DEMO_SOURCES = [
+export const DEMO_SOURCES: readonly TestSource[] = [
   { name: 'el-dorado', file: 'el-dorado.xlsx' },
   { name: 'cascabel', file: 'cascabel.xlsx' },
   { name: 'la-nanita', file: 'la-nanita.xlsx' },
   { name: 'la-pinta', file: 'la-pinta.xlsx' },
   { name: 'uber-gross', file: 'uber-gross.xlsx' },
-] as const;
+];

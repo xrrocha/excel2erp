@@ -1,13 +1,12 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import JSZip from 'jszip';
 import { normalizeContent, validateFilename } from '../../helpers/normalize.ts';
 import { DEMO_USER_INPUTS, DEMO_FILENAME_PATTERNS, DEMO_SOURCES } from '../../fixtures/demo-inputs.ts';
+import { ui } from '../../helpers/e2e-ui.ts';
+import { getDirname } from '../../helpers/paths.ts';
 
-// ESM equivalent of __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = getDirname(import.meta.url);
 
 /**
  * Demo tests for the Rey Pepinito scenario.
@@ -17,56 +16,6 @@ const __dirname = path.dirname(__filename);
  *
  * Run with: bun run test:e2e:demo
  */
-
-/**
- * UI abstraction for interacting with the TypeScript app.
- */
-const ui = {
-  /** Select source from dropdown and wait for form to load */
-  async selectSource(page: Page, sourceName: string) {
-    const select = page.locator('select[name="source"], select');
-    await expect(select).toBeVisible({ timeout: 10000 });
-    await select.selectOption(sourceName);
-    await page.waitForTimeout(500);
-  },
-
-  /** Fill a named input field */
-  async fillInput(page: Page, fieldName: string, value: string) {
-    const input = page.locator(`input[name="${fieldName}"]`);
-    await expect(input).toBeVisible({ timeout: 5000 });
-
-    const inputType = await input.getAttribute('type');
-    if (inputType === 'date') {
-      // Convert YYYYMMDD to YYYY-MM-DD for date input
-      const formatted = value.length === 8
-        ? `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`
-        : value;
-      await input.fill(formatted);
-    } else {
-      await input.fill(value);
-    }
-  },
-
-  /** Upload Excel file */
-  async uploadFile(page: Page, filePath: string) {
-    const fileInput = page.locator('input[type="file"][accept*=".xls"]');
-    await expect(fileInput).toBeAttached({ timeout: 5000 });
-    await fileInput.setInputFiles(filePath);
-  },
-
-  /** Wait for preview and click download */
-  async confirmDownload(page: Page) {
-    const downloadBtn = page.locator('.btn-confirm');
-    await expect(downloadBtn).toBeVisible({ timeout: 5000 });
-    await downloadBtn.click();
-  },
-
-  /** Wait for preview to appear */
-  async waitForPreview(page: Page) {
-    const previewCard = page.locator('.preview-card');
-    await expect(previewCard).toBeVisible({ timeout: 5000 });
-  },
-};
 
 test.describe('Demo: Rey Pepinito Excel Processing', () => {
 

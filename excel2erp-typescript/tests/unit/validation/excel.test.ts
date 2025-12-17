@@ -28,8 +28,8 @@ function createMockXlsData(): ArrayBuffer {
   return data.buffer;
 }
 
-// Load a real test fixture
-const fixturesPath = path.join(__dirname, '../../../tests/fixtures/legacy/excel');
+// Load a real test fixture — tests/fixtures/demo/excel/
+const fixturesPath = path.join(__dirname, '../../../tests/fixtures/demo/excel');
 
 function loadFixture(name: string): ArrayBuffer {
   const filePath = path.join(fixturesPath, name);
@@ -141,16 +141,16 @@ describe('validateFileSize', () => {
 });
 
 describe('validateExcelStructure', () => {
-  it('validates real pedido-coral.xls fixture', () => {
-    const data = loadFixture('pedido-coral.xls');
+  it('validates real el-dorado.xlsx fixture', () => {
+    const data = loadFixture('el-dorado.xlsx');
     const result = validateExcelStructure(data);
     expect(result.valid).toBe(true);
     expect(result.workbook).toBeDefined();
     expect(result.workbook!.SheetNames.length).toBeGreaterThan(0);
   });
 
-  it('validates real pedido-rosado.xlsx fixture', () => {
-    const data = loadFixture('pedido-rosado.xlsx');
+  it('validates real cascabel.xlsx fixture', () => {
+    const data = loadFixture('cascabel.xlsx');
     const result = validateExcelStructure(data);
     expect(result.valid).toBe(true);
     expect(result.workbook).toBeDefined();
@@ -166,25 +166,25 @@ describe('validateExcelStructure', () => {
 
 describe('validateSheetExists', () => {
   it('validates sheet at index 0', () => {
-    const data = loadFixture('pedido-coral.xls');
+    const data = loadFixture('el-dorado.xlsx');
     const structure = validateExcelStructure(data);
-    const result = validateSheetExists(structure.workbook!, 0, 'coral');
+    const result = validateSheetExists(structure.workbook!, 0, 'el-dorado');
     expect(result.valid).toBe(true);
   });
 
   it('rejects negative sheet index', () => {
-    const data = loadFixture('pedido-coral.xls');
+    const data = loadFixture('el-dorado.xlsx');
     const structure = validateExcelStructure(data);
-    const result = validateSheetExists(structure.workbook!, -1, 'coral');
+    const result = validateSheetExists(structure.workbook!, -1, 'el-dorado');
     expect(result.valid).toBe(false);
     expect(result.errors[0].message).toContain('does not exist');
   });
 
   it('rejects out of range sheet index', () => {
-    const data = loadFixture('pedido-coral.xls');
+    const data = loadFixture('el-dorado.xlsx');
     const structure = validateExcelStructure(data);
     const sheetCount = structure.workbook!.SheetNames.length;
-    const result = validateSheetExists(structure.workbook!, sheetCount + 5, 'coral');
+    const result = validateSheetExists(structure.workbook!, sheetCount + 5, 'el-dorado');
     expect(result.valid).toBe(false);
     expect(result.errors[0].message).toContain('does not exist');
   });
@@ -208,25 +208,25 @@ describe('validateExcelFile (full validation)', () => {
     defaultValues: {}
   };
 
-  it('validates pedido-coral.xls with matching config', () => {
-    const data = loadFixture('pedido-coral.xls');
-    const coralConfig = {
-      name: 'coral',
-      description: 'Coral',
+  it('validates el-dorado.xlsx with matching config', () => {
+    const data = loadFixture('el-dorado.xlsx');
+    const elDoradoConfig = {
+      name: 'el-dorado',
+      description: 'Mercados El Dorado',
       sheetIndex: 0,
       header: [
-        { name: 'CardCode', locator: 'B3' }
+        { name: 'NumAtCard', locator: 'E2' }
       ],
       detail: {
-        locator: 'A12',
+        locator: 'A8',
         properties: [
-          { name: 'ItemCode', locator: 'CODIGO DE BARRAS' }
+          { name: 'ItemCode', locator: 'Cod.' }
         ]
       },
-      defaultValues: { WhsCode: 'BD-GYE' }
+      defaultValues: { CardCode: 'C800197225' }
     };
 
-    const result = validateExcelFile(data, 'pedido-coral.xls', coralConfig);
+    const result = validateExcelFile(data, 'el-dorado.xlsx', elDoradoConfig);
     expect(result.valid).toBe(true);
     expect(result.workbook).toBeDefined();
     expect(result.errors).toEqual([]);
@@ -240,22 +240,22 @@ describe('validateExcelFile (full validation)', () => {
   });
 
   it('rejects wrong file extension', () => {
-    const data = loadFixture('pedido-coral.xls');
+    const data = loadFixture('el-dorado.xlsx');
     const result = validateExcelFile(data, 'data.csv', minimalConfig);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.message.includes('.csv'))).toBe(true);
   });
 
   it('rejects wrong sheet index', () => {
-    const data = loadFixture('pedido-coral.xls');
+    const data = loadFixture('el-dorado.xlsx');
     const wrongSheetConfig = { ...minimalConfig, sheetIndex: 99 };
-    const result = validateExcelFile(data, 'pedido-coral.xls', wrongSheetConfig);
+    const result = validateExcelFile(data, 'el-dorado.xlsx', wrongSheetConfig);
     expect(result.valid).toBe(false);
     expect(result.errors.some(e => e.message.includes('Sheet index'))).toBe(true);
   });
 
   it('collects warnings from all validation steps', () => {
-    const data = loadFixture('pedido-coral.xls');
+    const data = loadFixture('el-dorado.xlsx');
     // Config with header cells that don't exist
     const configWithMissingHeaders = {
       ...minimalConfig,
@@ -264,13 +264,13 @@ describe('validateExcelFile (full validation)', () => {
         { name: 'Missing2', locator: 'AA100' }
       ],
       detail: {
-        locator: 'A12',
+        locator: 'A8',
         properties: [
           { name: 'Code', locator: 'NONEXISTENT_COLUMN' }
         ]
       }
     };
-    const result = validateExcelFile(data, 'pedido-coral.xls', configWithMissingHeaders);
+    const result = validateExcelFile(data, 'el-dorado.xlsx', configWithMissingHeaders);
     // Should have warnings about empty header cells and missing columns
     expect(result.warnings.length).toBeGreaterThan(0);
   });
