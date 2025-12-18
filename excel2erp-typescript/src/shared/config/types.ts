@@ -113,8 +113,10 @@ export interface AppConfig {
   name: string;
   /** Application description */
   description: string;
-  /** Logo filename */
+  /** Logo filename (resolved with assetsDir if present) */
   logo?: string;
+  /** Base directory for assets (logos, etc.) - used to resolve relative paths */
+  assetsDir?: string;
   /** UI parameters */
   parameters: {
     source: string;

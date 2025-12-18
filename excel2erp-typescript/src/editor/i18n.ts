@@ -72,19 +72,39 @@ export const translations: Record<SupportedLang, Record<string, string>> = {
     'excel.prevRows': 'Previous rows',
     'excel.nextRows': 'Next rows',
 
+    // Mapping popup
+    'popup.title': 'Assign Cell',
+    'popup.cell': 'Cell',
+    'popup.column': 'Column',
+    'popup.value': 'Value',
+    'popup.assignTo': 'Assign to header field:',
+    'popup.assignToDetail': 'Assign to detail field:',
+    'popup.noFields': 'No assignable header fields',
+    'popup.noDetailFields': 'No assignable detail fields',
+    'popup.cancel': 'Cancel',
+    'popup.alreadyMapped': 'Already mapped',
+    'popup.mappedTo': 'Mapped to',
+
+    // Detail region popup
+    'popup.chooseAction': 'What would you like to do?',
+    'popup.headerField': 'Map to header field',
+    'popup.detailStart': 'Set as detail table start',
+    'popup.detailStartDesc': 'This cell will be the top-left corner of the detail data region',
+    'popup.unmapDetail': 'Remove detail region',
+    'popup.unmapDetailDesc': 'This will clear all detail column mappings',
+    'popup.unmapConfirm': 'Remove',
+
+    // Excel guidance
+    'excel.guidanceNoDetail': 'Click a cell for header field, or click row number to set detail table start',
+    'excel.guidanceWithDetail': 'Click column headers in the highlighted region to assign detail fields',
+    'excel.mappingProgress': '{mapped} of {total} detail fields mapped',
+    'excel.mappingComplete': 'All {total} detail fields mapped',
+
     // Errors
     'error.prefix': 'Error:',
     'error.parseConfig': 'Failed to parse config file',
     'error.parseExcel': 'Failed to parse Excel file',
-
-    // Mapping popup
-    'popup.title': 'Assign Cell',
-    'popup.cell': 'Cell',
-    'popup.value': 'Value',
-    'popup.assignTo': 'Assign to header field:',
-    'popup.noFields': 'No assignable header fields',
-    'popup.cancel': 'Cancel',
-    'popup.alreadyMapped': 'Already mapped',
+    'error.detailColumnCount': 'Cannot set detail region here. Found {found} contiguous columns, but {required} detail fields are required.',
   },
 
   es: {
@@ -149,19 +169,39 @@ export const translations: Record<SupportedLang, Record<string, string>> = {
     'excel.prevRows': 'Filas anteriores',
     'excel.nextRows': 'Filas siguientes',
 
+    // Mapping popup
+    'popup.title': 'Asignar Celda',
+    'popup.cell': 'Celda',
+    'popup.column': 'Columna',
+    'popup.value': 'Valor',
+    'popup.assignTo': 'Asignar a campo de cabecera:',
+    'popup.assignToDetail': 'Asignar a campo de detalle:',
+    'popup.noFields': 'Sin campos de cabecera asignables',
+    'popup.noDetailFields': 'Sin campos de detalle asignables',
+    'popup.cancel': 'Cancelar',
+    'popup.alreadyMapped': 'Ya mapeado',
+    'popup.mappedTo': 'Mapeado a',
+
+    // Detail region popup
+    'popup.chooseAction': '¿Qué desea hacer?',
+    'popup.headerField': 'Mapear a campo de cabecera',
+    'popup.detailStart': 'Establecer como inicio de tabla de detalle',
+    'popup.detailStartDesc': 'Esta celda será la esquina superior izquierda de la región de datos de detalle',
+    'popup.unmapDetail': 'Eliminar región de detalle',
+    'popup.unmapDetailDesc': 'Esto eliminará todos los mapeos de columnas de detalle',
+    'popup.unmapConfirm': 'Eliminar',
+
+    // Excel guidance
+    'excel.guidanceNoDetail': 'Haga clic en una celda para campo de cabecera, o en número de fila para establecer inicio de tabla de detalle',
+    'excel.guidanceWithDetail': 'Haga clic en encabezados de columna en la región resaltada para asignar campos de detalle',
+    'excel.mappingProgress': '{mapped} de {total} campos de detalle mapeados',
+    'excel.mappingComplete': 'Todos los {total} campos de detalle mapeados',
+
     // Errors
     'error.prefix': 'Error:',
     'error.parseConfig': 'Error al procesar archivo de configuración',
     'error.parseExcel': 'Error al procesar archivo Excel',
-
-    // Mapping popup
-    'popup.title': 'Asignar Celda',
-    'popup.cell': 'Celda',
-    'popup.value': 'Valor',
-    'popup.assignTo': 'Asignar a campo de cabecera:',
-    'popup.noFields': 'Sin campos de cabecera asignables',
-    'popup.cancel': 'Cancelar',
-    'popup.alreadyMapped': 'Ya mapeado',
+    'error.detailColumnCount': 'No se puede establecer la región de detalle aquí. Se encontraron {found} columnas contiguas, pero se requieren {required} campos de detalle.',
   },
 };
 

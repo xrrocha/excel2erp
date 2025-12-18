@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
+import { viteSingleFile } from 'vite-plugin-singlefile';
 import { resolve } from 'path';
 
 export default defineConfig({
+  plugins: [viteSingleFile()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -13,11 +15,6 @@ export default defineConfig({
     emptyOutDir: false,
     rollupOptions: {
       input: resolve(__dirname, 'editor.html'),
-      output: {
-        entryFileNames: 'editor.js',
-        chunkFileNames: 'editor-[name].js',
-        assetFileNames: 'editor-[name].[ext]',
-      },
     },
   },
   server: {

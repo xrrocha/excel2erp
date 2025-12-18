@@ -99,10 +99,11 @@ function isNestedConfig(raw: RawYamlConfig): raw is RawYamlConfigNested {
 export function parseYamlConfig(yamlString: string): AppConfig {
   const raw = YAML.parse(yamlString) as RawYamlConfig;
 
-  // Detect structure and extract config object
+  // Detect structure and extract config object + assetsDir
   const configData = isNestedConfig(raw) ? raw.config : raw;
+  const assetsDir = isNestedConfig(raw) ? raw.assetsDir : undefined;
 
-  return transformConfig(configData);
+  return transformConfig(configData, assetsDir);
 }
 
 /**
@@ -134,13 +135,25 @@ export async function loadConfigFromUrl(url: string): Promise<AppConfig> {
 }
 
 /**
+ * Resolve a logo path by prepending assetsDir if present.
+ */
+function resolveLogoPath(logo: string | undefined, assetsDir: string | undefined): string | undefined {
+  if (!logo) return undefined;
+  if (!assetsDir) return logo;
+  // Normalize: remove leading ./ from assetsDir if present
+  const normalizedDir = assetsDir.replace(/^\.\//, '');
+  return `${normalizedDir}/${logo}`;
+}
+
+/**
  * Transform raw config to typed AppConfig.
  */
-function transformConfig(raw: RawYamlConfigFlat): AppConfig {
+function transformConfig(raw: RawYamlConfigFlat, assetsDir?: string): AppConfig {
   return {
     name: raw.name,
     description: raw.description,
-    logo: raw.logo,
+    logo: resolveLogoPath(raw.logo, assetsDir),
+    assetsDir,
     parameters: {
       source: raw.parameters.source,
       workbook: raw.parameters.workbook,
@@ -148,16 +161,16 @@ function transformConfig(raw: RawYamlConfigFlat): AppConfig {
       successMessage: raw.parameters.successMessage,
       extractionError: raw.parameters.extractionError,
     },
-    sources: raw.sources.map(transformSource),
+    sources: raw.sources.map(s => transformSource(s, assetsDir)),
     result: transformResult(raw.result),
   };
 }
 
-function transformSource(raw: RawSourceConfig): SourceConfig {
+function transformSource(raw: RawSourceConfig, assetsDir?: string): SourceConfig {
   return {
     name: raw.name,
     description: raw.description,
-    logo: raw.logo,
+    logo: resolveLogoPath(raw.logo, assetsDir),
     sheetIndex: raw.sheetIndex ?? 0,
     defaultValues: raw.defaultValues ?? {},
     header: (raw.header ?? []).map(transformSourceProperty),

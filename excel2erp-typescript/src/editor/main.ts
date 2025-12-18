@@ -1,8 +1,27 @@
 import Alpine from 'alpinejs';
-import type { AppConfig, SourceConfig, ResultProperty } from '../shared/config/types';
+import type { AppConfig, SourceConfig } from '../shared/config/types';
 import { parseYamlConfig } from '../shared/config/loader';
-import { ExcelReader, colToLetter } from '../shared/excel/reader';
+import { ExcelReader, colToLetter, parseCellAddress } from '../shared/excel/reader';
 import { type SupportedLang, detectLanguage, saveLanguage, translate } from './i18n';
+import {
+  type CellValue,
+  type DetailRegion,
+  computeDetailRegion,
+  countContiguousColumns,
+  findFirstNonEmptyColumn,
+  isInDetailRegion as isInDetailRegionFn,
+  isDetailColumn,
+} from './detail-region';
+import {
+  extractSheetData,
+  calculateColumnWidths,
+} from './sheet-utils';
+import {
+  type ValueSource,
+  type PropertyInfo,
+  classifyValueSource,
+  toPropertyInfo,
+} from './value-source';
 
 /**
  * Editor navigation views
@@ -10,21 +29,9 @@ import { type SupportedLang, detectLanguage, saveLanguage, translate } from './i
 type EditorView = 'schema' | 'sources' | 'source-detail';
 
 /**
- * Value source classification for a result property
+ * Mapping popup mode - determines what options are shown
  */
-type ValueSource = 'constant' | 'from-excel' | 'per-source' | 'user-input' | 'row-index';
-
-/**
- * Enriched property info for display
- */
-interface PropertyInfo {
-  name: string;
-  type: string;
-  source: ValueSource;
-  sourceLabel: string;
-  value?: string;
-  prompt?: string;
-}
+type MappingPopupMode = 'header' | 'detail-start' | 'detail-column' | 'detail-unmap';
 
 /**
  * Source card info for gallery display
@@ -39,18 +46,10 @@ interface SourceCardInfo {
 }
 
 /**
- * Cell value type for Excel grid display
- */
-type CellValue = string | number;
-
-/**
  * Excel viewer constants
  */
 const EXCEL_VISIBLE_ROWS = 15;
 const EXCEL_MAX_DISPLAY_ROWS = 50;
-const COLUMN_MIN_WIDTH = 60;
-const COLUMN_MAX_WIDTH = 200;
-const COLUMN_CHAR_WIDTH = 8;
 
 /**
  * Editor application state
@@ -80,6 +79,8 @@ interface EditorState {
   showMappingPopup: boolean;
   popupCellAddress: string;
   popupCellValue: string;
+  popupMode: MappingPopupMode;
+  popupColIndex: number | null;
 
   // UI state
   loading: boolean;
@@ -102,7 +103,15 @@ interface EditorState {
   get visibleEndRow(): number;
   get columnLetters(): string[];
   get visibleSheetData(): CellValue[][];
-  get mappableHeaderFields(): { name: string; isMapped: boolean }[];
+  get mappableHeaderFields(): { name: string; isMapped: boolean; mappedTo?: string }[];
+  get mappableDetailFields(): { name: string; isMapped: boolean; mappedTo?: string }[];
+  get detailRegion(): DetailRegion | null;
+  get hasDetailRegion(): boolean;
+  get requiredDetailFieldCount(): number;
+  get headerMappingStatus(): { mapped: number; total: number; complete: boolean };
+  get detailMappingStatus(): { mapped: number; total: number; complete: boolean };
+  get detailMappingProgressText(): string;
+  isDetailColumnMapped(col: number): boolean;
 
   // Methods
   init(): Promise<void>;
@@ -115,93 +124,18 @@ interface EditorState {
   markDirty(): void;
   clearExcelState(): void;
   onCellClick(rowIndex: number, colIndex: number): void;
+  determineCellClickMode(row: number, col: number, region: DetailRegion | null): MappingPopupMode;
+  onRowHeaderClick(rowIndex: number): void;
+  onColumnHeaderClick(colIndex: number): void;
   assignToHeaderField(fieldName: string): void;
+  setDetailStart(): void;
+  setDetailStartInternal(row: number, col: number): void;
+  assignToDetailField(fieldName: string): void;
+  unmapDetailRegion(): void;
+  openPopup(address: string, value: string, colIndex: number, mode: MappingPopupMode): void;
   closeMappingPopup(): void;
-}
-
-/**
- * Determine the value source for a result property.
- * Returns source type only; label is resolved via i18n in the UI layer.
- */
-function classifyValueSource(
-  prop: ResultProperty,
-  section: 'header' | 'detail',
-  sources: SourceConfig[]
-): ValueSource {
-  // Row index special case
-  if (prop.defaultValue === '${index}') {
-    return 'row-index';
-  }
-
-  // Has a fixed default value (constant)
-  if (prop.defaultValue !== undefined) {
-    return 'constant';
-  }
-
-  // Check if any source extracts this from Excel
-  const isExtractedFromExcel = sources.some((src) => {
-    if (section === 'header') {
-      return src.header.some((h) => h.name === prop.name);
-    } else {
-      return src.detail.properties.some((d) => d.name === prop.name);
-    }
-  });
-
-  if (isExtractedFromExcel) {
-    return 'from-excel';
-  }
-
-  // Check if any source has a defaultValue for this
-  const hasSourceDefault = sources.some(
-    (src) => src.defaultValues && prop.name in src.defaultValues
-  );
-
-  if (hasSourceDefault) {
-    return 'per-source';
-  }
-
-  // Has a prompt, needs user input
-  if (prop.prompt) {
-    return 'user-input';
-  }
-
-  // Fallback
-  return 'from-excel';
-}
-
-/**
- * Map ValueSource to i18n key suffix.
- */
-const SOURCE_I18N_KEYS: Record<ValueSource, string> = {
-  'constant': 'constant',
-  'from-excel': 'fromExcel',
-  'per-source': 'perSource',
-  'user-input': 'userInput',
-  'row-index': 'rowIndex',
-};
-
-/**
- * Build PropertyInfo from a ResultProperty.
- */
-function toPropertyInfo(
-  prop: ResultProperty,
-  section: 'header' | 'detail',
-  sources: SourceConfig[],
-  t: (key: string) => string
-): PropertyInfo {
-  const source = classifyValueSource(prop, section, sources);
-  const sourceLabel = source === 'constant'
-    ? `${t('source.constant')} ${prop.defaultValue}`
-    : t(`source.${SOURCE_I18N_KEYS[source]}`);
-
-  return {
-    name: prop.name,
-    type: prop.type || 'text',
-    source,
-    sourceLabel,
-    value: prop.defaultValue,
-    prompt: prop.prompt,
-  };
+  isInDetailRegion(row: number, col: number): boolean;
+  isDetailColumnHeader(col: number): boolean;
 }
 
 /**
@@ -233,6 +167,8 @@ function createEditorApp(): EditorState {
     showMappingPopup: false,
     popupCellAddress: '',
     popupCellValue: '',
+    popupMode: 'header' as MappingPopupMode,
+    popupColIndex: null,
 
     // UI state
     loading: false,
@@ -338,21 +274,91 @@ function createEditorApp(): EditorState {
       return this.sheetData.slice(this.visibleStartRow, this.visibleEndRow);
     },
 
-    get mappableHeaderFields(): { name: string; isMapped: boolean }[] {
+    get mappableHeaderFields(): { name: string; isMapped: boolean; mappedTo?: string }[] {
       if (!this.config || !this.selectedSource) return [];
 
-      // Get header fields that can be assigned from Excel (no defaultValue)
+      // Fields with per-source defaults don't need Excel mapping
+      const defaultedNames = new Set(Object.keys(this.selectedSource.defaultValues || {}));
+
+      // Get header fields that can be assigned from Excel (no defaultValue, no per-source default)
       const assignableFields = this.config.result.header.properties
         .filter((p) => p.defaultValue === undefined)
+        .filter((p) => !defaultedNames.has(p.name))
         .map((p) => p.name);
 
       // Check which are already mapped in the current source
-      const mappedFields = new Set(this.selectedSource.header.map((h) => h.name));
+      const mappedByName = new Map(this.selectedSource.header.map((h) => [h.name, h.locator]));
 
       return assignableFields.map((name) => ({
         name,
-        isMapped: mappedFields.has(name),
+        isMapped: mappedByName.has(name),
+        mappedTo: mappedByName.get(name),
       }));
+    },
+
+    get mappableDetailFields(): { name: string; isMapped: boolean; mappedTo?: string }[] {
+      if (!this.config || !this.selectedSource) return [];
+
+      // Get detail fields that can be assigned from Excel (no defaultValue, not row-index)
+      const assignableFields = this.config.result.detail.properties
+        .filter((p) => p.defaultValue === undefined || p.defaultValue === '${index}')
+        .filter((p) => p.defaultValue !== '${index}')  // Exclude row-index fields
+        .map((p) => p.name);
+
+      // Check which are already mapped in the current source
+      const mappedProps = this.selectedSource.detail?.properties || [];
+      const mappedByName = new Map(mappedProps.map((p) => [p.name, p.locator]));
+
+      return assignableFields.map((name) => ({
+        name,
+        isMapped: mappedByName.has(name),
+        mappedTo: mappedByName.get(name),
+      }));
+    },
+
+    get requiredDetailFieldCount(): number {
+      if (!this.config) return 0;
+      // Count detail fields that need to be mapped from Excel
+      return this.config.result.detail.properties
+        .filter((p) => p.defaultValue === undefined)
+        .length;
+    },
+
+    get detailRegion(): DetailRegion | null {
+      if (!this.selectedSource?.detail?.locator || !this.workbook) return null;
+      return computeDetailRegion(this.sheetData, this.selectedSource.detail.locator);
+    },
+
+    get hasDetailRegion(): boolean {
+      return this.detailRegion !== null;
+    },
+
+    get headerMappingStatus(): { mapped: number; total: number; complete: boolean } {
+      const total = this.mappableHeaderFields.length;
+      const mapped = this.mappableHeaderFields.filter((f) => f.isMapped).length;
+      return { mapped, total, complete: mapped >= total };
+    },
+
+    get detailMappingStatus(): { mapped: number; total: number; complete: boolean } {
+      const total = this.requiredDetailFieldCount;
+      const mapped = this.mappableDetailFields.filter((f) => f.isMapped).length;
+      return { mapped, total, complete: mapped >= total };
+    },
+
+    get detailMappingProgressText(): string {
+      const { mapped, total, complete } = this.detailMappingStatus;
+      if (complete) {
+        return this.t('excel.mappingComplete').replace('{total}', String(total));
+      }
+      return this.t('excel.mappingProgress')
+        .replace('{mapped}', String(mapped))
+        .replace('{total}', String(total));
+    },
+
+    isDetailColumnMapped(col: number): boolean {
+      if (!this.selectedSource?.detail?.properties) return false;
+      const colLetter = colToLetter(col);
+      return this.selectedSource.detail.properties.some((p) => p.locator === colLetter);
     },
 
     // Methods
@@ -407,52 +413,16 @@ function createEditorApp(): EditorState {
       this.selectedSheetIndex = index;
       const sheet = this.workbook.getSheet(index);
 
-      // Extract sheet data as 2D array (limit to EXCEL_MAX_DISPLAY_ROWS)
-      const data: CellValue[][] = [];
-      let maxCol = 0;
-
-      // Scan to find used range (up to max rows)
-      for (let row = 0; row < EXCEL_MAX_DISPLAY_ROWS; row++) {
-        const rowData: CellValue[] = [];
-        let hasData = false;
-
-        // Scan columns (up to reasonable limit)
-        for (let col = 0; col < 26; col++) {
-          const value = sheet.readCellByIndex(row, col);
-          rowData.push(value);
-          if (value !== '') {
-            hasData = true;
-            maxCol = Math.max(maxCol, col);
-          }
-        }
-
-        if (!hasData && row > 0) {
-          // Stop at first completely empty row
-          break;
-        }
-
-        data.push(rowData.slice(0, maxCol + 1));
-      }
+      // Extract sheet data using shared utility
+      const { data, rows, cols } = extractSheetData(sheet, EXCEL_MAX_DISPLAY_ROWS);
 
       this.sheetData = data;
-      this.totalRows = data.length;
-      this.totalCols = maxCol + 1;
+      this.totalRows = rows;
+      this.totalCols = cols;
       this.visibleStartRow = 0;
 
-      // Calculate column widths based on content
-      const widths: number[] = [];
-      for (let col = 0; col <= maxCol; col++) {
-        let maxLen = 2; // Minimum for column letter (A, B, etc.)
-        for (const row of data) {
-          if (col < row.length) {
-            const cellLen = String(row[col]).length;
-            maxLen = Math.max(maxLen, cellLen);
-          }
-        }
-        const width = Math.min(COLUMN_MAX_WIDTH, Math.max(COLUMN_MIN_WIDTH, maxLen * COLUMN_CHAR_WIDTH));
-        widths.push(width);
-      }
-      this.columnWidths = widths;
+      // Calculate column widths using shared utility
+      this.columnWidths = calculateColumnWidths(data, cols);
     },
 
     scrollExcel(direction: 'up' | 'down'): void {
@@ -497,19 +467,97 @@ function createEditorApp(): EditorState {
     onCellClick(rowIndex: number, colIndex: number): void {
       if (!this.workbook) return;
 
-      // Calculate actual row in sheet (accounting for scroll)
       const actualRow = this.visibleStartRow + rowIndex;
-      this.popupCellAddress = colToLetter(colIndex) + (actualRow + 1);
-      this.popupCellValue = String(this.sheetData[actualRow]?.[colIndex] ?? '');
-      this.showMappingPopup = true;
+      const mode = this.determineCellClickMode(actualRow, colIndex, this.detailRegion);
+      const address = mode === 'detail-column'
+        ? colToLetter(colIndex)
+        : colToLetter(colIndex) + (actualRow + 1);
+      const value = String(this.sheetData[actualRow]?.[colIndex] ?? '');
+
+      // DEBUG: Trace cell click values
+      console.log('[onCellClick] rowIndex=%d, colIndex=%d, visibleStartRow=%d, actualRow=%d',
+        rowIndex, colIndex, this.visibleStartRow, actualRow);
+      console.log('[onCellClick] mode=%s, address=%s, value=%s', mode, address, JSON.stringify(value));
+      console.log('[onCellClick] detailRegion=%o', this.detailRegion);
+      console.log('[onCellClick] sheetData[%d]=%o', actualRow, this.sheetData[actualRow]);
+
+      this.openPopup(address, value, colIndex, mode);
+    },
+
+    determineCellClickMode(
+      row: number,
+      col: number,
+      region: DetailRegion | null
+    ): MappingPopupMode {
+      if (!region) return 'detail-start';
+
+      // Clicking detail region start cell → unmap option
+      if (row === region.startRow && col === region.startCol) {
+        return 'detail-unmap';
+      }
+
+      // Clicking detail region header row → column assignment
+      if (row === region.startRow && col >= region.startCol && col < region.endCol) {
+        return 'detail-column';
+      }
+
+      // Outside detail region → header field assignment
+      return 'header';
+    },
+
+    onRowHeaderClick(rowIndex: number): void {
+      if (!this.workbook || this.hasDetailRegion) return;
+
+      const actualRow = this.visibleStartRow + rowIndex;
+      const rowData = this.sheetData[actualRow] || [];
+
+      // Find first non-empty cell using shared utility
+      const firstNonEmptyCol = findFirstNonEmptyColumn(rowData);
+      if (firstNonEmptyCol === -1) return;
+
+      // Count contiguous columns using shared utility
+      const colCount = countContiguousColumns(rowData, firstNonEmptyCol);
+
+      // Validate column count
+      if (colCount < this.requiredDetailFieldCount) {
+        this.error = this.t('error.detailColumnCount')
+          .replace('{found}', String(colCount))
+          .replace('{required}', String(this.requiredDetailFieldCount));
+        return;
+      }
+
+      // Set detail start
+      this.popupCellAddress = colToLetter(firstNonEmptyCol) + (actualRow + 1);
+      this.popupCellValue = String(rowData[firstNonEmptyCol] ?? '');
+      this.popupColIndex = firstNonEmptyCol;
+      this.setDetailStartInternal(actualRow, firstNonEmptyCol);
+    },
+
+    onColumnHeaderClick(colIndex: number): void {
+      if (!this.workbook || !this.hasDetailRegion) return;
+
+      const region = this.detailRegion;
+      if (!region) return;
+
+      // Check if column is within detail region
+      if (colIndex < region.startCol || colIndex >= region.endCol) return;
+
+      const address = colToLetter(colIndex);
+      const value = String(this.sheetData[region.startRow]?.[colIndex] ?? '');
+      this.openPopup(address, value, colIndex, 'detail-column');
     },
 
     assignToHeaderField(fieldName: string): void {
-      if (!this.config || !this.selectedSource) return;
+      // DEBUG: Trace header field assignment
+      console.log('[assignToHeaderField] CALLED with fieldName=%s', fieldName);
+      console.log('[assignToHeaderField] popupCellAddress=%s', this.popupCellAddress);
 
-      // Find the source in config and update its header mapping
-      const source = this.config.sources.find((s) => s.name === this.selectedSourceName);
-      if (!source) return;
+      const source = this.selectedSource;
+      if (!source) {
+        console.log('[assignToHeaderField] No selectedSource, returning early');
+        return;
+      }
+      console.log('[assignToHeaderField] source.name=%s', source.name);
 
       // Remove existing mapping for this field (if any)
       source.header = source.header.filter((h) => h.name !== fieldName);
@@ -517,17 +565,118 @@ function createEditorApp(): EditorState {
       // Add new mapping
       source.header.push({
         name: fieldName,
-        cell: this.popupCellAddress,
+        locator: this.popupCellAddress,
       });
 
       this.markDirty();
       this.closeMappingPopup();
     },
 
+    openPopup(address: string, value: string, colIndex: number, mode: MappingPopupMode): void {
+      this.popupCellAddress = address;
+      this.popupCellValue = value;
+      this.popupColIndex = colIndex;
+      this.popupMode = mode;
+      this.showMappingPopup = true;
+    },
+
     closeMappingPopup(): void {
       this.showMappingPopup = false;
       this.popupCellAddress = '';
       this.popupCellValue = '';
+      this.popupMode = 'header';
+      this.popupColIndex = null;
+    },
+
+    setDetailStart(): void {
+      if (!this.config || !this.selectedSource || !this.popupCellAddress) return;
+
+      const parsed = parseCellAddress(this.popupCellAddress);
+      if (!parsed) return;
+
+      this.setDetailStartInternal(parsed.row, parsed.col);
+      this.closeMappingPopup();
+    },
+
+    setDetailStartInternal(row: number, col: number): void {
+      if (!this.config || !this.selectedSource) return;
+
+      const source = this.selectedSource;
+
+      // Count contiguous columns using shared utility
+      const rowData = this.sheetData[row] || [];
+      const colCount = countContiguousColumns(rowData, col);
+
+      // Validate column count
+      if (colCount < this.requiredDetailFieldCount) {
+        this.error = this.t('error.detailColumnCount')
+          .replace('{found}', String(colCount))
+          .replace('{required}', String(this.requiredDetailFieldCount));
+        return;
+      }
+
+      // Set the detail locator
+      const cellAddress = colToLetter(col) + (row + 1);
+      source.detail = {
+        locator: cellAddress,
+        properties: [],
+      };
+
+      this.markDirty();
+      this.error = null;
+    },
+
+    assignToDetailField(fieldName: string): void {
+      const source = this.selectedSource;
+      if (!source?.detail || this.popupColIndex === null) return;
+
+      // DEBUG: Trace popup state at assignment time
+      console.log('[assignToDetailField] fieldName=%s', fieldName);
+      console.log('[assignToDetailField] popupCellAddress=%s, popupCellValue=%s, popupColIndex=%d',
+        this.popupCellAddress, JSON.stringify(this.popupCellValue), this.popupColIndex);
+
+      // Use column header text as locator (e.g., "CANTID", "DESDOC"), not column letter
+      const columnHeader = this.popupCellValue;
+
+      // Remove existing mapping for this field (if any)
+      source.detail.properties = source.detail.properties.filter((p) => p.name !== fieldName);
+
+      // Remove any mapping that was using this column header
+      source.detail.properties = source.detail.properties.filter((p) => p.locator !== columnHeader);
+
+      // Add new mapping
+      source.detail.properties.push({
+        name: fieldName,
+        locator: columnHeader,
+      });
+
+      console.log('[assignToDetailField] stored locator=%s', columnHeader);
+      console.log('[assignToDetailField] detail.properties=%o', source.detail.properties);
+
+      this.markDirty();
+      this.closeMappingPopup();
+    },
+
+    unmapDetailRegion(): void {
+      const source = this.selectedSource;
+      if (!source) return;
+
+      // Clear detail configuration
+      source.detail = {
+        locator: '',
+        properties: [],
+      };
+
+      this.markDirty();
+      this.closeMappingPopup();
+    },
+
+    isInDetailRegion(row: number, col: number): boolean {
+      return isInDetailRegionFn(this.detailRegion, row, col);
+    },
+
+    isDetailColumnHeader(col: number): boolean {
+      return isDetailColumn(this.detailRegion, col);
     },
   };
 }
@@ -536,5 +685,8 @@ function createEditorApp(): EditorState {
 Alpine.data('editor', createEditorApp);
 Alpine.start();
 
-// Export for type checking
+// Export types for type checking
 export type { EditorState, EditorView, PropertyInfo, SourceCardInfo, ValueSource };
+
+// Export pure functions for testing
+export { classifyValueSource, toPropertyInfo };

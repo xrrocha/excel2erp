@@ -705,6 +705,19 @@
       font-size: 0.8125rem;
     }
 
+    .mapping-item.unmapped {
+      background: transparent;
+      opacity: 0.5;
+    }
+
+    .mapping-item.unmapped .mapping-locator {
+      color: var(--gray-400);
+    }
+
+    .mapping-item.mapped .mapping-locator {
+      color: var(--success);
+    }
+
     /* ===== Excel Viewer ===== */
     .excel-section {
       margin-top: var(--space-lg);
@@ -869,6 +882,52 @@
       background: var(--primary-light);
     }
 
+    /* Detail region styling */
+    .excel-grid td.detail-region {
+      background: rgba(59, 130, 246, 0.06);
+    }
+
+    .excel-grid td.detail-region-start {
+      border-left: 3px solid var(--primary);
+    }
+
+    .excel-grid td.detail-region:hover {
+      background: rgba(59, 130, 246, 0.12) !important;
+    }
+
+    .excel-grid th.detail-column-header {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .excel-grid th.detail-column-header:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .excel-grid th.detail-column-header.mapped {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .excel-grid th.detail-column-header.mapped:hover {
+      background: var(--success);
+      color: white;
+    }
+
+    /* Row header clickable (for setting detail start) */
+    .excel-grid .row-header.clickable {
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .excel-grid .row-header.clickable:hover {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
     /* Scroll controls */
     .excel-footer {
       display: flex;
@@ -913,6 +972,27 @@
     .excel-scroll-btn svg {
       width: 14px;
       height: 14px;
+    }
+
+    /* Excel guidance text */
+    .excel-guidance {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-bottom: none;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      font-size: 0.75rem;
+      color: var(--gray-600);
+    }
+
+    .excel-guidance svg {
+      width: 16px;
+      height: 16px;
+      color: var(--primary);
+      flex-shrink: 0;
     }
 
     /* Empty state */
@@ -1449,16 +1529,19 @@
                 <div class="mappings-row">
                   <!-- Header mappings -->
                   <div class="mapping-section header-section">
-                    <div class="mapping-section-title" x-text="t('detail.headerMappings')"></div>
+                    <div class="mapping-section-title">
+                      <span x-text="t('detail.headerMappings')"></span>
+                      <span style="font-weight: normal; text-transform: none;" x-text="`(${headerMappingStatus.mapped}/${headerMappingStatus.total})`"></span>
+                    </div>
                     <div class="mapping-list">
-                      <template x-for="mapping in selectedSource.header" :key="mapping.name">
-                        <div class="mapping-item">
-                          <span class="mapping-field" x-text="mapping.name"></span>
+                      <template x-for="field in mappableHeaderFields" :key="field.name">
+                        <div class="mapping-item" :class="{ mapped: field.isMapped, unmapped: !field.isMapped }">
+                          <span class="mapping-field" x-text="field.name"></span>
                           <span class="mapping-arrow">←</span>
-                          <span class="mapping-locator" x-text="mapping.cell || mapping.range || mapping.value || '—'"></span>
+                          <span class="mapping-locator" x-text="field.mappedTo || '—'"></span>
                         </div>
                       </template>
-                      <div x-show="!selectedSource.header || selectedSource.header.length === 0" class="mapping-empty" x-text="t('detail.noHeaderMappings')"></div>
+                      <div x-show="mappableHeaderFields.length === 0" class="mapping-empty" x-text="t('detail.noHeaderMappings')"></div>
                     </div>
                   </div>
 
@@ -1466,17 +1549,17 @@
                   <div class="mapping-section detail-section">
                     <div class="mapping-section-title">
                       <span x-text="t('detail.detailMappings')"></span>
-                      <span style="font-weight: normal; text-transform: none;" x-text="`(${t('detail.row')} ${selectedSource.detail?.startRow || '?'})`"></span>
+                      <span style="font-weight: normal; text-transform: none;" x-text="`(${detailMappingStatus.mapped}/${detailMappingStatus.total})`"></span>
                     </div>
                     <div class="mapping-list">
-                      <template x-for="mapping in selectedSource.detail?.properties || []" :key="mapping.name">
-                        <div class="mapping-item">
-                          <span class="mapping-field" x-text="mapping.name"></span>
+                      <template x-for="field in mappableDetailFields" :key="field.name">
+                        <div class="mapping-item" :class="{ mapped: field.isMapped, unmapped: !field.isMapped }">
+                          <span class="mapping-field" x-text="field.name"></span>
                           <span class="mapping-arrow">←</span>
-                          <span class="mapping-locator" x-text="mapping.column || mapping.value || '—'"></span>
+                          <span class="mapping-locator" x-text="field.mappedTo || '—'"></span>
                         </div>
                       </template>
-                      <div x-show="!selectedSource.detail?.properties || selectedSource.detail.properties.length === 0" class="mapping-empty" x-text="t('detail.noDetailMappings')"></div>
+                      <div x-show="mappableDetailFields.length === 0" class="mapping-empty" x-text="t('detail.noDetailMappings')"></div>
                     </div>
                   </div>
                 </div>
@@ -1528,15 +1611,28 @@
                     </template>
                   </div>
 
+                  <!-- Guidance text -->
+                  <div class="excel-guidance">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span x-text="hasDetailRegion ? t('excel.guidanceWithDetail') + ' — ' + detailMappingProgressText : t('excel.guidanceNoDetail')"></span>
+                  </div>
+
                   <!-- Grid container -->
-                  <div class="excel-grid-container">
+                  <div class="excel-grid-container" style="border-top-left-radius: 0; border-top-right-radius: 0;">
                     <table class="excel-grid">
                       <!-- Header row with column letters -->
                       <thead>
                         <tr>
                           <th class="corner-cell"></th>
                           <template x-for="(letter, colIndex) in columnLetters" :key="letter">
-                            <th x-text="letter" :style="{ width: columnWidths[colIndex] + 'px', minWidth: columnWidths[colIndex] + 'px' }"></th>
+                            <th
+                              x-text="letter"
+                              :style="{ width: columnWidths[colIndex] + 'px', minWidth: columnWidths[colIndex] + 'px' }"
+                              :class="{ 'detail-column-header': isDetailColumnHeader(colIndex), 'mapped': isDetailColumnMapped(colIndex) }"
+                              @click="isDetailColumnHeader(colIndex) && onColumnHeaderClick(colIndex)"
+                            ></th>
                           </template>
                         </tr>
                       </thead>
@@ -1544,9 +1640,22 @@
                       <tbody>
                         <template x-for="(row, rowIndex) in visibleSheetData" :key="rowIndex">
                           <tr>
-                            <td class="row-header" x-text="visibleStartRow + rowIndex + 1"></td>
+                            <td
+                              class="row-header"
+                              :class="{ clickable: !hasDetailRegion }"
+                              x-text="visibleStartRow + rowIndex + 1"
+                              @click="!hasDetailRegion && onRowHeaderClick(rowIndex)"
+                            ></td>
                             <template x-for="(cell, colIndex) in row" :key="colIndex">
-                              <td x-text="cell" :title="cell" @click="onCellClick(rowIndex, colIndex)"></td>
+                              <td
+                                x-text="cell"
+                                :title="cell"
+                                @click="onCellClick(rowIndex, colIndex)"
+                                :class="{
+                                  'detail-region': isInDetailRegion(visibleStartRow + rowIndex, colIndex),
+                                  'detail-region-start': detailRegion && (visibleStartRow + rowIndex) >= detailRegion.startRow && (visibleStartRow + rowIndex) < detailRegion.endRow && colIndex === detailRegion.startCol
+                                }"
+                              ></td>
                             </template>
                             <!-- Fill empty cells if row is shorter than max columns -->
                             <template x-for="i in Math.max(0, totalCols - row.length)" :key="'empty-' + i">
@@ -1605,10 +1714,10 @@
         </button>
       </div>
       <div class="popup-body">
-        <!-- Cell info -->
+        <!-- Cell/Column info -->
         <div class="popup-cell-info">
           <div>
-            <div class="popup-cell-label" x-text="t('popup.cell')"></div>
+            <div class="popup-cell-label" x-text="popupMode === 'detail-column' ? t('popup.column') : t('popup.cell')"></div>
             <div class="popup-cell-address" x-text="popupCellAddress"></div>
           </div>
           <div class="popup-cell-value">
@@ -1617,22 +1726,87 @@
           </div>
         </div>
 
-        <!-- Field list -->
-        <div class="popup-section-title" x-text="t('popup.assignTo')"></div>
-        <div class="popup-field-list">
-          <template x-for="field in mappableHeaderFields" :key="field.name">
-            <button
-              class="popup-field-btn"
-              :class="{ mapped: field.isMapped }"
-              @click="!field.isMapped && assignToHeaderField(field.name)"
-              :disabled="field.isMapped"
-            >
-              <span class="popup-field-name" x-text="field.name"></span>
-              <span x-show="field.isMapped" class="popup-field-status" x-text="t('popup.alreadyMapped')"></span>
+        <!-- Mode: Header field only -->
+        <template x-if="popupMode === 'header'">
+          <div>
+            <div class="popup-section-title" x-text="t('popup.assignTo')"></div>
+            <div class="popup-field-list">
+              <template x-for="field in mappableHeaderFields" :key="field.name">
+                <button
+                  class="popup-field-btn"
+                  @click="assignToHeaderField(field.name)"
+                >
+                  <span class="popup-field-name" x-text="field.name"></span>
+                  <span x-show="field.isMapped" class="popup-field-status">
+                    <span x-text="t('popup.mappedTo')"></span> <span x-text="field.mappedTo"></span>
+                  </span>
+                </button>
+              </template>
+              <div x-show="mappableHeaderFields.length === 0" class="popup-empty" x-text="t('popup.noFields')"></div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Mode: Choose between header field or detail start -->
+        <template x-if="popupMode === 'detail-start'">
+          <div>
+            <div class="popup-section-title" x-text="t('popup.chooseAction')"></div>
+            <div class="popup-field-list">
+              <!-- Option: Header field -->
+              <button class="popup-field-btn" @click="popupMode = 'header'">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span class="popup-field-name" x-text="t('popup.headerField')"></span>
+              </button>
+              <!-- Option: Detail start -->
+              <button class="popup-field-btn" @click="setDetailStart()" style="flex-direction: column; align-items: flex-start;">
+                <div style="display: flex; align-items: center; gap: var(--space-sm);">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="popup-field-name" x-text="t('popup.detailStart')"></span>
+                </div>
+                <span style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem;" x-text="t('popup.detailStartDesc')"></span>
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Mode: Detail column assignment -->
+        <template x-if="popupMode === 'detail-column'">
+          <div>
+            <div class="popup-section-title" x-text="t('popup.assignToDetail')"></div>
+            <div class="popup-field-list">
+              <template x-for="field in mappableDetailFields" :key="field.name">
+                <button
+                  class="popup-field-btn"
+                  @click="assignToDetailField(field.name)"
+                >
+                  <span class="popup-field-name" x-text="field.name"></span>
+                  <span x-show="field.isMapped" class="popup-field-status">
+                    <span x-text="t('popup.mappedTo')"></span> <span x-text="field.mappedTo"></span>
+                  </span>
+                </button>
+              </template>
+              <div x-show="mappableDetailFields.length === 0" class="popup-empty" x-text="t('popup.noDetailFields')"></div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Mode: Unmap detail region -->
+        <template x-if="popupMode === 'detail-unmap'">
+          <div>
+            <div class="popup-section-title" x-text="t('popup.unmapDetail')"></div>
+            <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: var(--space-md);" x-text="t('popup.unmapDetailDesc')"></p>
+            <button class="btn btn-primary" style="background: var(--error);" @click="unmapDetailRegion()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              <span x-text="t('popup.unmapConfirm')"></span>
             </button>
-          </template>
-          <div x-show="mappableHeaderFields.length === 0" class="popup-empty" x-text="t('popup.noFields')"></div>
-        </div>
+          </div>
+        </template>
       </div>
       <div class="popup-footer">
         <button class="btn btn-secondary" @click="closeMappingPopup()">
